@@ -1,0 +1,10 @@
+Data and parameter sets in this repository are licensed under the Creative Commons
+Attribution 4.0 International licence (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+Copyright (c) 2026 Remus Teodorescu, Nicolai A. Weinreich, Berke Bilgin, Yi Zhuang
+(AAU Energy, Aalborg University) and Wenzel Prochazka (NXP Semiconductors Austria).
+
+Exception: data/parameters/bpx_lfp_fc4680.json is licensed under CC BY-SA 4.0
+(https://creativecommons.org/licenses/by-sa/4.0/legalcode); see
+data/parameters/LICENCE-bpx-lfp.md.

@@ -1,0 +1,11 @@
+# Derived from eis_fig12b_points.csv: R_hf = real-axis crossing on the high-frequency side (linear fit of the 4 points nearest the axis); R_arc_end = Re at the -Im minimum between arc and diffusion tail; R_ct = R_arc_end - R_hf; 10 mHz = point of largest -Im. Cell 131/828 is the damaged (NOK) cell; its arc-end detection is unreliable.
+cell,SOC_pct,R_hf_mOhm,R_arc_end_mOhm,R_ct_mOhm,Re_10mHz_mOhm,negIm_10mHz_mOhm
+131/828,80,3.225,4.606,1.382,5.904,1.575
+131/828,50,3.361,4.606,1.246,5.822,1.376
+131/828,20,3.58,4.606,1.027,6.185,1.08
+186/828,80,2.656,3.979,1.323,4.961,1.431
+186/828,50,2.795,4.078,1.283,4.836,1.246
+186/828,20,2.94,4.501,1.561,5.348,1.387
+549/828,80,2.639,3.971,1.332,5.015,1.474
+549/828,50,2.697,3.983,1.286,4.781,1.252
+549/828,20,2.859,4.427,1.568,5.252,1.378

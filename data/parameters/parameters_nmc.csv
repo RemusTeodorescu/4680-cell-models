@@ -1,0 +1,80 @@
+section,symbol,value,unit,provenance,note
+,$L_{\mathrm{Cu}}/2$,4.0,um,M,Half of the 8 um foil [S5]; the model resolves one half-stack about the foil centreline.
+,$\rho$,8.96,g/cm^3,L,Pure copper.
+,$c_p$,0.385,J/g/K,L,Pure copper.
+,$\lambda$,4.0,W/cm/K,L,"Pure copper, 400 W/m/K."
+,$\sigma$,596000.0,S/cm,L,"Pure copper, 5.96e7 S/m."
+,$L_-$,126.0,um,M,"[S6] loading 19.5 mg/cm^2 per side at 1.55 g/cm^3 gives 126 um, consistent with the measured double-sided thickness. Was an [E] 110 um until 27 Sep 2026."
+,$\rho$,1.9093939393939394,g/cm^3,E,Graphite composite including binder and imbibed electrolyte. No 4680-specific source.
+,$c_p$,0.8955137733239622,J/g/K,E,Typical graphite electrode.
+,$\lambda$,0.015,W/cm/K,E,1.5 W/m/K through-plane composite.
+,$\sigma$,2.15,S/cm,L,[S1] 215 S/m.
+,$\varepsilon_e$,0.29653679653679654,-,D,"1 - eps_s, as in [S1], which counts all anode solid as active. [S1] gave 0.25."
+,$\varepsilon_s$,0.7034632034632035,-,D,[S6] loading 19.5 mg/cm^2 over the 126 um coating at the composite solid density of 2.20 g/cm^3. [S1] gave 0.75.
+,$r_s$,5.86,um,L,[S1] 5.86 um.
+,"$c_{s,\max}$",0.030555,mol/cm^3,L,"[S1] Table VII, 30555 mol/m^3, MEASURED variant. See the note on the two cs_max variants in the provenance section."
+,$\theta_0$,0.70031,-,E,"Window calibration (27 Sep 2026): solved with the other electrode's value so that OCV(100 %) = 4.2 V and a C/20 discharge to 2.5 V delivers 22.31 Ah (Ank et al. 2023), with the Chen2020 OCP functions and the loadings kept, giving 0.701; left free in the thermal calibration of 1 Oct 2026 (paper 1 Section 5.1), which returned 0.700. Chen2020 [S1] gave 0.9014."
+,$\theta_{\min}$,0.02741,-,D,End of the C/20 discharge to 2.5 V after the window calibration.
+,$D_s$,3.3e-10,cm^2/s,L,[S2] 3.3e-14 m^2/s.
+,$m_{\mathrm{ref}}$,0.0648,(A/cm^2)(cm^3/mol)^1.5,L,[S2] 6.48e-7 in SI units.
+,$\alpha_a$,0.5,-,L,Symmetric kinetics.
+,$\alpha_c$,0.5,-,L,Symmetric kinetics.
+,"$E_{a,i_0}$",35000.0,J/mol,E,Typical graphite charge-transfer activation energy; [S1] is isothermal and reports none.
+,"$E_{a,D_s}$",30000.0,J/mol,E,Typical graphite solid-diffusion value.
+,$\partial U/\partial T$,4.4526620648567506e-05,V/K,L,"O'Regan et al. (2022), measured on the LG M50 electrodes of [S1], as a function of stoichiometry. The value shown is its average over the working window."
+,$L_{\mathrm{sep}}$,12.000000000000002,um,L,"[S1] LG M50 value. [S4] notes the 4680 separator is ceramic-coated on the cathode side, not captured."
+,$\rho$,1.0556999999999999,g/cm^3,E,Polyethylene wetted with carbonate.
+,$c_p$,1.6925179501752394,J/g/K,E,Wetted polyethylene.
+,$\lambda$,0.0033,W/cm/K,E,0.33 W/m/K. The dominant through-stack thermal resistance of the layer stack.
+,$\varepsilon_e$,0.47,-,L,[S1] porosity.
+,$\varepsilon_p$,0.53,-,L,Remainder is polymer.
+,$L_+$,85.0,um,M,"[S5] ~85 um, taken as measured rather than fitted. The delivered capacity is NOT thereby a prediction: the accessible stoichiometric window was calibrated to the measured capacity instead. See the UTILISATION NOTE."
+,$\rho$,3.4012000000000002,g/cm^3,E,NMC811 composite including binder and electrolyte.
+,$c_p$,0.9214708338233564,J/g/K,E,Typical NMC electrode.
+,$\lambda$,0.015,W/cm/K,E,1.5 W/m/K through-plane composite.
+,$\sigma$,0.0018,S/cm,L,[S1] 0.18 S/m.
+,$\varepsilon_e$,0.335,-,L,"[S1] porosity; [S5] reports 30--40 %, consistent."
+,$\varepsilon_s$,0.665,-,L,[S1] active-material volume fraction.
+,$r_s$,5.22,um,L,[S1] 5.22 um.
+,"$c_{s,\max}$",0.051555,mol/cm^3,L,"[S1] Table VII, 51555 mol/m^3, MEASURED variant. The calibrated [S2] value of 63104 would give 27.5 Ah, above every reported 4680 capacity."
+,$\theta_0$,0.26379,-,E,"Window calibration (27 Sep 2026): solved with the other electrode's value so that OCV(100 %) = 4.2 V and a C/20 discharge to 2.5 V delivers 22.31 Ah (Ank et al. 2023), with the Chen2020 OCP functions and the loadings kept. Chen2020 [S1] gave 0.2661."
+,$\theta_{\max}$,0.88946,-,D,"End of the C/20 discharge to 2.5 V after the window calibration. It replaces 0.8841, which set the window to 22.078 Ah but did not stop the discharge: with the transferred theta0 the model delivered 26.1 Ah at C/3, +18 %. Check not used in the calibration: C/3 now gives 22.083 Ah (+0.02 %)."
+,$D_s$,3.392902502801644e-11,cm^2/s,E,"Set through the diffusion time tau_c = r_s^2/D_s with r_s [L]. Calibrated 1 Oct 2026 on the 1C/2C charge test of Ank et al. (2023) (paper 1 Section 5.1): tau_c = 8031 s (3.39e-15 m^2/s), within x1.2 of the transferred 6812 s of [S2] (4.0e-15 m^2/s). The transferred set of the paper used 700 s, chosen below the resistance-based heat of About:Energy."
+,$m_{\mathrm{ref}}$,0.342,(A/cm^2)(cm^3/mol)^1.5,L,[S2] 3.42e-6 in SI units.
+,$\alpha_a$,0.5,-,L,Symmetric kinetics.
+,$\alpha_c$,0.5,-,L,Symmetric kinetics.
+,"$E_{a,i_0}$",17800.0,J/mol,E,Typical NMC charge-transfer value.
+,"$E_{a,D_s}$",11000.0,J/mol,E,"Calibrated 1 Oct 2026 with tau_c on the charge test of Ank et al. (2023): 11.0 kJ/mol (transferred set: 25 kJ/mol, a typical NMC value)."
+,$\partial U/\partial T$,-1.927823268863511e-05,V/K,L,"O'Regan et al. (2022), LG M50 NMC811, as a function of stoichiometry; window average shown."
+,$L_{\mathrm{Al}}/2$,5.0,um,M,Half of the 10 um foil [S5].
+,$\rho$,2.7,g/cm^3,L,Pure aluminium.
+,$c_p$,0.9,J/g/K,L,Pure aluminium.
+,$\lambda$,2.38,W/cm/K,L,"Pure aluminium, 238 W/m/K."
+,$\sigma$,350000.0,S/cm,L,"Pure aluminium, 3.5e7 S/m."
+,"$c_{e,0}$",0.001,mol/cm^3,L,"1.0 M LiPF6 in EC:EMC 3:7, the electrolyte of [S1] and [S3]."
+,$t_+^0$,0.2594,-,L,[S1] transference number.
+,$\mathrm{d}\ln f/\mathrm{d}\ln c_e$,0.0,-,L,"[S1] uses a thermodynamic factor of unity, so this is zero."
+,"$E_{a,D_e}$",17100.0,J/mol,E,Typical carbonate value; [S3] is reported at 25 C only and gives no activation energy.
+,"$E_{a,\kappa}$",17100.0,J/mol,E,"As for $E_{a,D_e}$."
+,$T_0$,298.15,K,M,"Uniform initial temperature, 25 C."
+,$T_a$,298.15,K,M,"Ambient, 25 C."
+,$V_{\mathrm{cut}}$,2.5,V,L,Standard NMC811/graphite lower cut-off.
+,,326.7,cm,M,"[S6] Fig. 8 measures the cathode at 3267 mm unwound (the anode is 3403 mm, 136 mm longer, and wraps it). The cathode sets the active area, so it is the cathode length that becomes the model's y extent: y=0 is the core, y=H the outer wrap. [S4] reported ~3.3 m, consistent."
+,,7.0,cm,M,"[S4] 70 mm coated width. The out-of-plane direction; not resolved in x-y, it sets the active area and R_series. Distinct from the mechanical roll height below: the coating stops short of the foil edge, which is where the collector flags are folded."
+,,7.1,cm,M,[S6] 71 mm measured after removing both collector disks. This is the MECHANICAL height and it is what conducts heat axially and carries thermal mass; the coated height above is 1 mm shorter and is what carries current. Conflating the two overstates the active area by 1.4 %.
+,,14.0,cm,M/E,2 x electrode height because the electrode is coated on BOTH faces and the model resolves one half-stack. Gives an active separator area of H x depth = 4620 cm^2.
+,,0.0008,cm,M,"[S5] reports 6-8 um; [S4] notes 4.5 um foil entering production. 8 um chosen as the conservative (thicker, lower resistance is optimistic) end of the reported range."
+,,0.001,cm,M,[S5] reports 9-10 um.
+,,0.0085,cm,M,"[S5] reports ~85 um, taken as measured rather than fitted. Inverting the capacity relation for L at the 5.2 mAh/cm^2 areal capacity of [S4] gives 82 um, within 4 % of it, and that independent agreement is the main evidence the [L] transfer from the LG M50 is sound. NOTE that the delivered capacity is NOT a further independent check: theta_max is calibrated against Ank's C/3 measurement, so the capacity agreement is arithmetic. See the UTILISATION NOTE."
+,,0.0126,cm,M,"[S6] Fig. 9: anode loading 19.5 mg/cm^2 per side at a coating density of 1.55 g/cm^3 gives 126 um per side, consistent with the 258-268 um double-sided thickness less the 8 um foil. Until 27 Sep 2026 this was an [E] 110 um chosen for N/P = 1.15; N/P is now an output of the loadings."
+,,0.0012000000000000001,cm,L,"[S1] LG M50 value. [S4] notes the 4680 separator is ceramic-coated on the cathode side, which this does not capture."
+,,0.25,cm,M,"[S6] report NO winding mandrel: the core is an empty 5 mm void. Previously estimated at 3 mm assuming a former, which was 20 % too large. The inner thermal boundary is adiabatic either way, but the void carries no heat capacity and the spiral map starts further in."
+,,2.225,cm,M,"[S6] measure the roll at 44.5 mm diameter, inside a 46 mm can with a 0.5 mm wall."
+,,0.046400000000000004,cm,E,"Derived, not independent: Al + 2 cathode + 2 separator + 2 anode + Cu. Sets the radius-vs-winding-length map."
+,,0.005,W/cm^2/K,E,"50 W/m^2/K on the can outer surface, representative of a 4680 in a liquid-cooled pack with side-wall contact. No 4680-specific measurement found. This dominates the predicted temperature rise: at 1C the can-side convection is ~80 % of the total thermal resistance, so halving it nearly doubles the steady temperature rise. Sweep it before trusting any thermal number from this model."
+,,0.0005,ohm,E,"Welds, end discs, can, terminals and contact resistance. Not resolved by any 2-D slab model. Chosen so that the total modelled DCIR lands inside the 5.4-7 mOhm of [S5]; the electrochemistry supplies the rest. Pure fitting parameter."
+,,0.00094,ohm,E,"I^2 R_c at the can node, outside the voltage path, during the charge; calibrated 1 Oct 2026 on the charge test of Ank et al. (2023). Equals 0.5 mOhm per terminal, the value Ank et al. estimate for their holder. A property of the holder of that test, not of the cell (R_CONTACT_ANK)."
+,$U_+(\theta)$,4.292194837306072,V,L,"NMC811 open-circuit potential, `nmc_LGM50_ocp_Chen2020` [S1, S2], reproduced verbatim. Full form in Eq. (\ref{eq:ocppos})."
+,$U_-(\theta)$,0.09219042368174031,V,L,"Graphite open-circuit potential, `graphite_LGM50_ocp_Chen2020` [S1, S2]. The LG M50 anode carries a few per cent SiOx whereas [S4] reports the 4680 anode as silicon-free; the fit is transferred with that caveat. Full form in Eq. (\ref{eq:ocpneg})."
+,$\kappa(c_e)$,0.009487000000000006,S/cm,L,"Electrolyte ionic conductivity [S3]. About nine times the plasticised-gel value of Gu & Wang, which is why the electrolyte ohmic loss stops dominating the polarisation budget. Full form in Eq. (\ref{eq:kappa})."
+,$D_e(c_e)$,1.7694000000000006e-06,cm^2/s,L,"Salt diffusivity [S3], about 2.4 times the Gu & Wang gel value. Full form in Eq. (\ref{eq:de})."

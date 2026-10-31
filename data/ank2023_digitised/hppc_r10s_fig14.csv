@@ -1,0 +1,11 @@
+# Ank et al. 2023, J. Electrochem. Soc. 170, 120536, Fig. 14 (CC BY 4.0). Cell 186/828 (Gen1, OK). 10 s pulses, 25 C, 10 % SOC steps, 1 h relaxation before each pulse; resistance by Ohm's law at 10 s. Vector-digitised from the PDF (exact to plot precision, ~0.01 mOhm).
+SOC_pct,R10s_0.5C_discharge_mOhm,R10s_1.0C_discharge_mOhm,R10s_1.5C_discharge_mOhm,R10s_0.5C_charge_mOhm,R10s_1.0C_charge_mOhm,R10s_1.5C_charge_mOhm
+10,7.047,7.324,7.671,6.754,6.639,6.515
+20,5.919,5.937,5.942,5.851,5.833,5.798
+30,5.364,5.364,5.376,5.383,5.347,5.318
+40,5.225,5.217,5.202,5.383,5.338,5.301
+50,5.294,5.243,5.202,5.470,5.408,5.353
+60,5.416,5.321,5.254,5.556,5.486,5.405
+70,5.086,5.069,5.029,5.088,5.061,5.047
+80,5.051,5.069,5.058,5.053,5.060,5.070
+90,5.121,5.087,5.092,5.140,5.141,nan

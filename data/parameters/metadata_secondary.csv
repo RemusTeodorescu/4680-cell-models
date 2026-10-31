@@ -1,0 +1,37 @@
+cell_id,quantity,value,unit,provenance
+NMC-4680-ANK2023,can_outer_diameter,46,mm,M
+NMC-4680-ANK2023,can_height,80,mm,M
+NMC-4680-ANK2023,can_wall_thickness,0.5,mm,M
+LFP-FC4680-LIU2025,can_outer_diameter,46.3,mm,M
+LFP-FC4680-LIU2025,can_height,80.2,mm,M
+LFP-FC4680-LIU2025,can_wall_thickness,0.4182,mm,E
+NMC-4680-ANK2023,cathode_length,3267,mm,M
+NMC-4680-ANK2023,cathode_coating_per_side,85,um,M
+NMC-4680-ANK2023,anode_coating_per_side,126,um,E
+NMC-4680-ANK2023,cathode_porosity,0.335,-,L
+NMC-4680-ANK2023,anode_porosity,0.25,-,L
+NMC-4680-ANK2023,collector_disk_thickness,0.2,mm,M
+NMC-4680-ANK2023,insulator_thickness,0.65,mm,M
+NMC-4680-ANK2023,insulator_count,1,-,M
+NMC-4680-ANK2023,current_collection,tabless,-,M
+NMC-4680-ANK2023,core,"5 mm void, no mandrel",-,M
+NMC-4680-ANK2023,N_P_ratio,0.999512,-,D
+LFP-FC4680-LIU2025,cathode_height,69,mm,M
+LFP-FC4680-LIU2025,cathode_length,5370,mm,M
+LFP-FC4680-LIU2025,anode_height,71,mm,M
+LFP-FC4680-LIU2025,anode_length,5513,mm,M
+LFP-FC4680-LIU2025,cathode_coating_per_side,70,um,D
+LFP-FC4680-LIU2025,anode_coating_per_side,54.5,um,M
+LFP-FC4680-LIU2025,foil_cu_thickness,10,um,M
+LFP-FC4680-LIU2025,foil_al_thickness,10,um,M
+LFP-FC4680-LIU2025,separator_thickness,13.73,um,E
+LFP-FC4680-LIU2025,cathode_porosity,0.331013,-,D from cell mass
+LFP-FC4680-LIU2025,anode_porosity,0.319,-,E
+LFP-FC4680-LIU2025,collector_disk_thickness,0.31,mm,M
+LFP-FC4680-LIU2025,insulator_thickness,0.29,mm,M
+LFP-FC4680-LIU2025,insulator_count,2,-,M
+LFP-FC4680-LIU2025,current_collection,"multi-tab, 4 Al + 3 Ni",-,M
+LFP-FC4680-LIU2025,core,"PP mandrel, 7.1 mm tall",-,M
+LFP-FC4680-LIU2025,areal_capacity_cathode,2.09,mAh/cm2,M
+LFP-FC4680-LIU2025,areal_capacity_anode,2.34,mAh/cm2,M
+LFP-FC4680-LIU2025,roll_outer_radius,2.29562,cm,D

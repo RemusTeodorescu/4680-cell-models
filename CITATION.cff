@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: "4680 cell models: open parameter sets and data for NMC and LFP 4680 cells"
+message: "If you use these parameter sets or data, please cite the paper and this dataset."
+type: dataset
+authors:
+  - family-names: Teodorescu
+    given-names: Remus
+    affiliation: "AAU Energy, Aalborg University"
+    orcid: "https://orcid.org/0000-0002-2617-7168"
+  - family-names: Weinreich
+    given-names: Nicolai A.
+    affiliation: "AAU Energy, Aalborg University"
+  - family-names: Bilgin
+    given-names: Berke
+    affiliation: "AAU Energy, Aalborg University"
+  - family-names: Zhuang
+    given-names: Yi
+    affiliation: "AAU Energy, Aalborg University"
+  - family-names: Prochazka
+    given-names: Wenzel
+    affiliation: "NXP Semiconductors Austria GmbH & Co KG"
+license: CC-BY-4.0
+repository: "https://github.com/RemusTeodorescu/4680-cell-models"
+abstract: >-
+  Provenance-tagged parameter sets (BPX JSON, CSV, JSON) for the Tesla NMC811/graphite
+  4680 cell and the BYD FC4680 LiFePO4/graphite cell, with closure checks, bench-test data
+  of the BYD FC4680 (1C and 2C discharges with can temperatures), digitised published
+  measurements of the Tesla 4680 and the calibration logs.
+keywords:
+  - lithium-ion battery
+  - 4680 cylindrical cell
+  - Doyle-Fuller-Newman model
+  - BPX
+  - LiFePO4
+  - NMC811
+  - thermal modelling
