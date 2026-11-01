@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "4680 cell models: thermal DFN model, open parameter sets and data for NMC and LFP 4680 cells"
+title: "4680 cell models: models, parameter sets and data for 4680 cylindrical cells"
 message: "If you use these parameter sets or data, please cite the paper and this dataset."
 type: software
 authors:
