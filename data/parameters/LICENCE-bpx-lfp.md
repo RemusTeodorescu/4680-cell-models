@@ -1,7 +1,7 @@
 # One file in this dataset is not CC BY 4.0
 
 `data/parameters/bpx_lfp_fc4680.json` is released under **CC BY-SA 4.0**. Everything else
-in this repository is CC BY 4.0.
+in this repository is MIT (code) or CC BY 4.0 (data).
 
 ## Why
 
