@@ -1,0 +1,62 @@
+[
+ {
+  "location": "core",
+  "steady_internal_K_per_W": 19.962087015644755,
+  "steady_side_K_per_W": 3.488121708900055,
+  "internal_60s_K_per_W": 14.796974262745865,
+  "side_60s_K_per_W": 0.01604161541214006,
+  "side_600s_K_per_W": 1.2015853290378147,
+  "t_side_0.1K 100 ohm (0.11 W)": 480.0,
+  "t_side_0.1K 33 ohm (0.33 W)": 225.0,
+  "t_side_0.1K 10 ohm (1.1 W)": 120.0,
+  "t_side_0.1K 3 ohm (3.6 W)": 75.0
+ },
+ {
+  "location": "mid_radius",
+  "steady_internal_K_per_W": 13.803206993382846,
+  "steady_side_K_per_W": 3.603843603075215,
+  "internal_60s_K_per_W": 9.746630849808259,
+  "side_60s_K_per_W": 0.13384327751585573,
+  "side_600s_K_per_W": 1.4483639818641003,
+  "t_side_0.1K 100 ohm (0.11 W)": 360.0,
+  "t_side_0.1K 33 ohm (0.33 W)": 120.0,
+  "t_side_0.1K 10 ohm (1.1 W)": 50.0,
+  "t_side_0.1K 3 ohm (3.6 W)": 25.0
+ },
+ {
+  "location": "near_side",
+  "steady_internal_K_per_W": 13.5425837424145,
+  "steady_side_K_per_W": 8.817221507795395,
+  "internal_60s_K_per_W": 10.221398321374593,
+  "side_60s_K_per_W": 5.534153217818545,
+  "side_600s_K_per_W": 6.91988408692981,
+  "t_side_0.1K 100 ohm (0.11 W)": 1.0,
+  "t_side_0.1K 33 ohm (0.33 W)": 0.5,
+  "t_side_0.1K 10 ohm (1.1 W)": 0.5,
+  "t_side_0.1K 3 ohm (3.6 W)": 0.5
+ },
+ {
+  "location": "near_cap",
+  "steady_internal_K_per_W": 18.308885872111134,
+  "steady_side_K_per_W": 3.707670678207992,
+  "internal_60s_K_per_W": 14.200918900163419,
+  "side_60s_K_per_W": 0.24010954425453132,
+  "side_600s_K_per_W": 1.6148478431251818,
+  "t_side_0.1K 100 ohm (0.11 W)": 270.0,
+  "t_side_0.1K 33 ohm (0.33 W)": 75.0,
+  "t_side_0.1K 10 ohm (1.1 W)": 30.0,
+  "t_side_0.1K 3 ohm (3.6 W)": 15.0
+ },
+ {
+  "location": "at_cap_tab",
+  "steady_internal_K_per_W": 17.299183350067377,
+  "steady_side_K_per_W": 4.19123953187939,
+  "internal_60s_K_per_W": 13.560401732404783,
+  "side_60s_K_per_W": 0.9367151114407595,
+  "side_600s_K_per_W": 2.3927363529313164,
+  "t_side_0.1K 100 ohm (0.11 W)": 60.0,
+  "t_side_0.1K 33 ohm (0.33 W)": 15.0,
+  "t_side_0.1K 10 ohm (1.1 W)": 5.0,
+  "t_side_0.1K 3 ohm (3.6 W)": 3.0
+ }
+]

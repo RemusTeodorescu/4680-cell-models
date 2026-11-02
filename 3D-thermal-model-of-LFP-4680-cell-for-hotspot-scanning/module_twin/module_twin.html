@@ -1,0 +1,519 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>23s9p Module Thermal Twin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an instrument panel. Module map first and widest, controls and readouts beside it, traces below. */
+:root {
+  --bg: #f3f4f2;
+  --panel: #ffffff;
+  --ink: #1c2126;
+  --mute: #5b6570;
+  --line: #d9ddd8;
+  --accent: #1f6fb2;          /* coolant blue */
+  --warn: #c0392b;            /* short / alarm */
+  --ntc: #cf6a2b;
+  --ok: #2e8b62;
+  --housing: #e9ebe7;
+  --cell-edge: rgba(20, 24, 28, .35);
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111518; --panel: #192026; --ink: #e5e9ec; --mute: #9aa6b1; --line: #2b343c;
+    --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795;
+    --housing: #1f272e; --cell-edge: rgba(0, 0, 0, .55); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111518; --panel: #192026; --ink: #e5e9ec; --mute: #9aa6b1; --line: #2b343c;
+  --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795;
+  --housing: #1f272e; --cell-edge: rgba(0, 0, 0, .55); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 28px;
+}
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: .1px; text-wrap: balance; }
+.sub { color: var(--mute); font-size: 13px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--mute); margin: 0 0 8px; font-weight: 600; }
+.top { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; }
+@media (max-width: 960px) { .top { grid-template-columns: 1fr; } }
+#mapbox { position: relative; }
+canvas#map { width: 100%; height: auto; display: block; cursor: crosshair; }
+.legend { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; font-size: 12px; color: var(--mute); }
+.legend canvas { width: 240px; max-width: 100%; height: 12px; border-radius: 3px; }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 6px 8px; font: 12px/1.4 var(--font-data); color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,.12); white-space: nowrap; }
+.controls { display: grid; gap: 12px; }
+.ctl { display: grid; gap: 4px; }
+.ctl label { display: flex; justify-content: space-between; font-size: 13px; }
+.ctl label span.mono { color: var(--mute); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+select, button { font: 13px var(--font-ui); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; }
+button { cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; padding: 6px 10px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.tile .k { font-size: 12px; color: var(--mute); }
+.tile .v { font: 600 22px var(--font-data); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.tile .s { font-size: 12px; color: var(--mute); }
+.tile.alarm { border-color: var(--warn); }
+.tile.alarm .v { color: var(--warn); }
+.ntc .v { color: var(--ntc); }
+.bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .bottom { grid-template-columns: 1fr; } }
+canvas.chart { width: 100%; height: 190px; display: block; }
+.note { color: var(--mute); font-size: 12px; max-width: 95ch; }
+.note b { color: var(--ink); font-weight: 600; }
+.chips { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--mute); margin-top: 6px; }
+.chips i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>23s9p Module Thermal Twin</h1>
+    <span class="sub">207 BYD FC4680 cells · each cell coloured by its simulated surface temperature · click a cell to give it a soft short</span>
+  </header>
+
+  <div class="top">
+    <section class="panel" aria-label="Module map">
+      <p class="label">Module, top view (to scale)</p>
+      <div id="mapbox">
+        <canvas id="map" width="1400" height="560" role="img" aria-label="Module map coloured by cell temperature"></canvas>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="legend">
+        <span id="lgmode">surface</span>
+        <span class="mono" id="lgmin">25 °C</span>
+        <canvas id="lgbar" width="480" height="24" aria-hidden="true"></canvas>
+        <span class="mono" id="lgmax">45 °C</span>
+        <span>· ● NTC · red ring = soft short</span>
+      </div>
+    </section>
+
+    <aside class="panel controls" aria-label="Controls">
+      <p class="label">Run</p>
+      <div class="row">
+        <button class="primary" id="play" type="button">Pause</button>
+        <button id="reset" type="button">Reset</button>
+        <select id="speed" aria-label="Simulation speed">
+          <option value="10">10× real time</option>
+          <option value="30" selected>30× real time</option>
+          <option value="120">120× real time</option>
+          <option value="600">600× real time</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <span class="label" style="margin:0">Colour by</span>
+        <div class="seg" role="group" aria-label="Colour by">
+          <button type="button" id="m-surf" aria-pressed="true">Surface</button>
+          <button type="button" id="m-core" aria-pressed="false">Core</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label for="load">Load profile <span></span></label>
+        <select id="load">
+          <option value="const">Constant discharge</option>
+          <option value="drive" selected>Drive cycle (synthetic)</option>
+          <option value="pulse">10 s pulses, 10 s rest</option>
+          <option value="rest">Rest (no current)</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label for="crate">C-rate (peak) <span class="mono" id="crate-v"></span></label>
+        <input type="range" id="crate" min="0" max="3" step="0.1" value="2">
+      </div>
+      <div class="ctl">
+        <label for="tin">Coolant inlet <span class="mono" id="tin-v"></span></label>
+        <input type="range" id="tin" min="10" max="40" step="1" value="25">
+      </div>
+      <div class="ctl">
+        <label for="flow">Coolant flow <span class="mono" id="flow-v"></span></label>
+        <input type="range" id="flow" min="0.5" max="12" step="0.5" value="4">
+      </div>
+      <div class="ctl">
+        <label for="risc">Soft short for the next click <span></span></label>
+        <select id="risc">
+          <option value="1">1 Ω (≈ 11 W)</option>
+          <option value="3">3 Ω (≈ 3.6 W)</option>
+          <option value="10" selected>10 Ω (≈ 1.1 W)</option>
+          <option value="100">100 Ω (≈ 0.11 W)</option>
+        </select>
+      </div>
+      <div class="row">
+        <button type="button" id="clear">Clear all shorts</button>
+        <span class="sub mono" id="tclock">t = 0 s</span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="tiles" aria-live="polite">
+    <div class="tile ntc"><div class="k">NTC 1 (inlet)</div><div class="v" id="ntc1">–</div><div class="s">what the BMS sees</div></div>
+    <div class="tile ntc"><div class="k">NTC 2 (outlet)</div><div class="v" id="ntc2">–</div><div class="s">what the BMS sees</div></div>
+    <div class="tile" id="t-ms"><div class="k">Hottest surface</div><div class="v" id="maxs">–</div><div class="s" id="maxs-at">–</div></div>
+    <div class="tile" id="t-mc"><div class="k">Hottest core</div><div class="v" id="maxc">–</div><div class="s" id="maxc-at">–</div></div>
+    <div class="tile"><div class="k">Module current</div><div class="v" id="imod">–</div><div class="s" id="icell">–</div></div>
+    <div class="tile"><div class="k">Coolant out</div><div class="v" id="tout">–</div><div class="s">mean of the ribbons</div></div>
+  </div>
+
+  <div class="bottom">
+    <section class="panel">
+      <p class="label">Temperatures over time</p>
+      <canvas class="chart" id="trend" width="1000" height="380" role="img" aria-label="Temperature traces"></canvas>
+      <div class="chips">
+        <span><i style="background:var(--ntc)"></i>NTC 1 / NTC 2</span>
+        <span><i style="background:var(--warn)"></i>hottest core</span>
+        <span><i style="background:var(--ink)"></i>hottest surface</span>
+      </div>
+    </section>
+    <section class="panel">
+      <p class="label">Group voltages, deviation from the module mean</p>
+      <canvas class="chart" id="volts" width="1000" height="380" role="img" aria-label="Group voltage deviations"></canvas>
+      <div class="chips"><span>23 groups of 9 cells; a short drains its whole group, so the drift is 1/9 of a single cell's</span></div>
+    </section>
+  </div>
+
+  <p class="note"><b>What this is.</b> A reference 23s9p module (one of four in the Tesla Model Y 4680 pack) filled with BYD FC4680 LFP cells, and a fast thermal twin of it. Each cell is two thermal nodes (core and can), cooled by serpentine ribbons between the rows that run out from the manifold and back. Heat is ohmic (I²R, R = 5 mΩ per cell) plus V²/R<sub>isc</sub> in a shorted cell. Two NTCs sit on the cells at the coolant inlet and outlet. <b>Parameters</b> come from the paper 1 parameter set where available: heat capacity 281 J/K and core-to-can resistance 0.49 K/W. The cell resistance, the ribbon conductance (1 W/K per side) and the cell-to-cell conduction (0.02 W/K) are estimates. This is not the 3-D model of paper 1.2. It shows what the module's sensors can and cannot see.</p>
+</div>
+
+<script>
+(() => {
+  // ---------------- geometry (mm), same as fig_module_23s9p.py
+  const D = 46.3, NS = 23, NP = 9, GAPX = 1.5, RIB = 2.5;
+  const PX = D + GAPX, PY = D * Math.sqrt(3) / 2 + RIB * 0.9;
+  const N = NS * NP;
+  const cx = new Float64Array(N), cy = new Float64Array(N), grp = new Int16Array(N), rowOf = new Int16Array(N);
+  for (let i = 0; i < NS; i++) for (let j = 0; j < NP; j++) {
+    const k = i * NP + j;
+    cx[k] = i * PX + (j % 2 ? PX / 2 : 0); cy[k] = j * PY; grp[k] = i; rowOf[k] = j;
+  }
+  // neighbours (touching cells)
+  const nb = Array.from({ length: N }, () => []);
+  for (let a = 0; a < N; a++) for (let b = a + 1; b < N; b++) {
+    const d = Math.hypot(cx[a] - cx[b], cy[a] - cy[b]);
+    if (d < PX * 1.08) { nb[a].push(b); nb[b].push(a); }
+  }
+  // ribbons: 8, between rows r and r+1; each cell touches ribbon r-1 (below) and r (above)
+  const NR = NP - 1;
+  // cell order along each ribbon by x; flow direction alternates (out on even, back on odd)
+  const ribCells = [];
+  for (let r = 0; r < NR; r++) {
+    const list = [];
+    for (let k = 0; k < N; k++) if (rowOf[k] === r || rowOf[k] === r + 1) list.push(k);
+    list.sort((a, b) => cx[a] - cx[b]);
+    if (r % 2 === 1) list.reverse();
+    ribCells.push(list);
+  }
+  const NTC1 = 0 * NP + 0, NTC2 = 0 * NP + (NP - 1);
+
+  // ---------------- parameters
+  const P = {
+    Q_Ah: 15.4, R_cell: 0.005, C_core: 250, C_can: 31, R_cs: 0.49,
+    G_rib: 1.0, G_nb: 0.02, cp_cool: 3500, V_nom: 3.3,
+  };
+  // LFP open-circuit voltage (smooth, flat plateau); for the group voltage view only
+  function ocv(s) {
+    s = Math.min(0.999, Math.max(0.001, s));
+    return 3.25 + 0.08 * s + 0.12 * Math.exp(-(1 - s) / 0.02) - 0.35 * Math.exp(-s / 0.03) + 0.02 * Math.tanh((s - 0.6) / 0.05);
+  }
+
+  // ---------------- state
+  let Tc, Ts, socG, Risc, t, hist;
+  const ui = {
+    load: document.getElementById("load"), crate: document.getElementById("crate"),
+    tin: document.getElementById("tin"), flow: document.getElementById("flow"),
+    risc: document.getElementById("risc"), speed: document.getElementById("speed"),
+  };
+  let running = true, mode = "surf";
+  function reset() {
+    const T0 = +ui.tin.value;
+    Tc = new Float64Array(N).fill(T0); Ts = new Float64Array(N).fill(T0);
+    socG = new Float64Array(NS).fill(0.8); t = 0; hist = [];
+    if (!Risc) Risc = new Float64Array(N).fill(0);
+  }
+
+  function cellCurrent(time) {
+    const c = +ui.crate.value * P.Q_Ah;
+    switch (ui.load.value) {
+      case "const": return c;
+      case "rest": return 0;
+      case "pulse": return (Math.floor(time / 10) % 2 === 0) ? c : 0;
+      default: {     // synthetic drive cycle: cruise + accelerations + regeneration, period 600 s
+        const u = time % 600;
+        let f = 0.30 + 0.12 * Math.sin(2 * Math.PI * u / 97) + 0.08 * Math.sin(2 * Math.PI * u / 31);
+        if ((u > 60 && u < 75) || (u > 310 && u < 330)) f = 1.0;
+        if ((u > 140 && u < 160) || (u > 420 && u < 440)) f = -0.45;   // regen
+        if (u > 500 && u < 560) f = 0.0;                                // stop
+        return c * f;
+      }
+    }
+  }
+
+  const Tcool = Array.from({ length: NR }, () => new Float64Array(0));
+  function step(dt) {
+    const I = cellCurrent(t);
+    const Tin = +ui.tin.value;
+    const mdotRib = (+ui.flow.value / 60) * 1.05 / NR;    // L/min -> kg/s per ribbon (water-glycol)
+    const qRib = new Float64Array(N);                      // heat from each cell into ribbons this step
+    // coolant temperature along each ribbon (quasi-steady, marched in flow direction)
+    const TcoolCell = new Float64Array(N);
+    const nRibTouch = new Float64Array(N);
+    let toutSum = 0;
+    for (let r = 0; r < NR; r++) {
+      let T = Tin;
+      const list = ribCells[r];
+      for (const k of list) {
+        const q = P.G_rib * (Ts[k] - T);
+        TcoolCell[k] += T; nRibTouch[k] += 1;
+        T += q / (mdotRib * P.cp_cool);
+      }
+      toutSum += T;
+    }
+    // per-cell balances
+    const dTs = new Float64Array(N), dTc = new Float64Array(N);
+    for (let k = 0; k < N; k++) {
+      let Q = I * I * P.R_cell;
+      if (Risc[k] > 0) Q += Math.pow(ocv(socG[grp[k]]), 2) / Risc[k];
+      const qcs = (Tc[k] - Ts[k]) / P.R_cs;
+      const Tcl = TcoolCell[k] / Math.max(1, nRibTouch[k]);
+      let qnb = 0;
+      for (const b of nb[k]) qnb += P.G_nb * (Ts[k] - Ts[b]);
+      const qrib = P.G_rib * nRibTouch[k] * (Ts[k] - Tcl);
+      dTc[k] = (Q - qcs) / P.C_core;
+      dTs[k] = (qcs - qrib - qnb) / P.C_can;
+    }
+    for (let k = 0; k < N; k++) { Tc[k] += dt * dTc[k]; Ts[k] += dt * dTs[k]; }
+    // group state of charge: load current + leakage through shorts in the group
+    for (let g = 0; g < NS; g++) {
+      let leak = 0;
+      for (let j = 0; j < NP; j++) { const k = g * NP + j; if (Risc[k] > 0) leak += ocv(socG[g]) / Risc[k]; }
+      socG[g] -= dt * (I * NP + leak) / (NP * P.Q_Ah * 3600);
+      socG[g] = Math.max(0.02, Math.min(1, socG[g]));
+    }
+    t += dt;
+    return { I, tout: toutSum / NR };
+  }
+
+  // ---------------- colour map (perceptual, dark violet -> red -> yellow)
+  const STOPS = [[0, [20, 11, 52]], [0.25, [101, 21, 110]], [0.5, [188, 55, 84]], [0.75, [237, 105, 37]], [1, [252, 255, 164]]];
+  function cmap(u) {
+    u = Math.min(1, Math.max(0, u));
+    for (let i = 1; i < STOPS.length; i++) if (u <= STOPS[i][0]) {
+      const [u0, c0] = STOPS[i - 1], [u1, c1] = STOPS[i], f = (u - u0) / (u1 - u0);
+      return `rgb(${c0.map((v, n) => Math.round(v + f * (c1[n] - v))).join(",")})`;
+    }
+    return "rgb(252,255,164)";
+  }
+  const lg = document.getElementById("lgbar"), lgx = lg.getContext("2d");
+  for (let x = 0; x < lg.width; x++) { lgx.fillStyle = cmap(x / (lg.width - 1)); lgx.fillRect(x, 0, 1, lg.height); }
+
+  // ---------------- drawing
+  const cv = document.getElementById("map"), ctx = cv.getContext("2d");
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const W = (NS - 1) * PX + PX / 2 + D, H = (NP - 1) * PY + D;
+  const PAD = { l: 120, r: 20, t: 34, b: 20 };
+  function geom() {
+    const s = (cv.width - PAD.l - PAD.r) / W;
+    return { s, ox: PAD.l + D / 2 * s, oy: PAD.t + D / 2 * s };
+  }
+  cv.height = Math.round(PAD.t + PAD.b + H * ((cv.width - PAD.l - PAD.r) / W));
+  let lo = 25, hi = 45;
+  function drawMap() {
+    const g = geom();
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const vals = mode === "surf" ? Ts : Tc;
+    let mn = Infinity, mx = -Infinity;
+    for (let k = 0; k < N; k++) { mn = Math.min(mn, vals[k]); mx = Math.max(mx, vals[k]); }
+    // range: at least 4 K wide, smoothed so the colours do not flicker
+    const tmin = Math.floor(mn * 2) / 2, tmax = Math.max(tmin + 2, Math.ceil(mx * 2) / 2);
+    lo += (tmin - lo) * 0.2; hi += (tmax - hi) * 0.2;
+    document.getElementById("lgmin").textContent = lo.toFixed(1) + " °C";
+    document.getElementById("lgmax").textContent = hi.toFixed(1) + " °C";
+    document.getElementById("lgmode").textContent = mode === "surf" ? "surface" : "core";
+    // housing
+    ctx.fillStyle = css("--housing");
+    ctx.strokeStyle = css("--line"); ctx.lineWidth = 2;
+    roundRect(g.ox - D / 2 * g.s - 8, g.oy - D / 2 * g.s - 8, W * g.s + 16, H * g.s + 16, 10); ctx.fill(); ctx.stroke();
+    // manifold
+    ctx.fillStyle = css("--accent"); ctx.globalAlpha = 0.25;
+    ctx.fillRect(g.ox - D / 2 * g.s - 34, g.oy - D / 2 * g.s - 4, 18, H * g.s + 8);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = css("--accent"); ctx.font = `600 ${18}px ${css("--font-ui")}`; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ctx.fillText("in →", g.ox - D / 2 * g.s - 40, g.oy);
+    ctx.fillText("← out", g.ox - D / 2 * g.s - 40, g.oy + (NP - 1) * PY * g.s);
+    // ribbons
+    ctx.strokeStyle = css("--accent"); ctx.lineWidth = 2.2; ctx.globalAlpha = 0.6;
+    for (let r = 0; r < NR; r++) {
+      const list = ribCells[r].slice().sort((a, b) => cx[a] - cx[b]);
+      ctx.beginPath();
+      list.forEach((k, n) => {
+        const yy = cy[k] + (D / 2 + RIB / 2) * (rowOf[k] === r ? 1 : -1);
+        const X = g.ox + cx[k] * g.s, Y = g.oy + yy * g.s;
+        n ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+      });
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // cells
+    for (let k = 0; k < N; k++) {
+      const X = g.ox + cx[k] * g.s, Y = g.oy + cy[k] * g.s, R = D / 2 * g.s;
+      ctx.beginPath(); ctx.arc(X, Y, R - 0.6, 0, 2 * Math.PI);
+      ctx.fillStyle = cmap((vals[k] - lo) / (hi - lo)); ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = css("--cell-edge"); ctx.stroke();
+      if (Risc[k] > 0) { ctx.lineWidth = 4; ctx.strokeStyle = css("--warn"); ctx.beginPath(); ctx.arc(X, Y, R - 2, 0, 2 * Math.PI); ctx.stroke(); }
+    }
+    // NTC markers
+    for (const k of [NTC1, NTC2]) {
+      const X = g.ox + (cx[k] - D / 2 + 4) * g.s, Y = g.oy + cy[k] * g.s;
+      ctx.beginPath(); ctx.arc(X, Y, 7, 0, 2 * Math.PI); ctx.fillStyle = css("--ntc"); ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = css("--panel"); ctx.stroke();
+    }
+    // group numbers
+    ctx.fillStyle = css("--mute"); ctx.font = `${15}px ${css("--font-data")}`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    for (let i = 0; i < NS; i++) ctx.fillText(String(i + 1), g.ox + (i * PX + PX / 4) * g.s, g.oy - D / 2 * g.s - 12);
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  // ---------------- traces
+  const tr = document.getElementById("trend"), trx = tr.getContext("2d");
+  function drawTrend() {
+    const w = tr.width, h = tr.height, L = 56, R = 12, T = 12, B = 34;
+    trx.clearRect(0, 0, w, h);
+    if (hist.length < 2) return;
+    const t0 = hist[0].t, t1 = hist[hist.length - 1].t;
+    let mn = Infinity, mx = -Infinity;
+    for (const p of hist) for (const v of [p.n1, p.n2, p.ms, p.mc]) { mn = Math.min(mn, v); mx = Math.max(mx, v); }
+    mn = Math.floor(mn - 0.5); mx = Math.max(mn + 3, Math.ceil(mx + 0.5));
+    const X = tt => L + (w - L - R) * (tt - t0) / Math.max(1, t1 - t0), Y = v => T + (h - T - B) * (1 - (v - mn) / (mx - mn));
+    trx.strokeStyle = css("--line"); trx.lineWidth = 1; trx.fillStyle = css("--mute");
+    trx.font = `${20}px ${css("--font-data")}`; trx.textAlign = "right"; trx.textBaseline = "middle";
+    const nT = 4;
+    for (let i = 0; i <= nT; i++) {
+      const v = mn + (mx - mn) * i / nT, y = Y(v);
+      trx.beginPath(); trx.moveTo(L, y); trx.lineTo(w - R, y); trx.stroke(); trx.fillText(v.toFixed(1), L - 6, y);
+    }
+    trx.textAlign = "center"; trx.textBaseline = "top";
+    for (let i = 0; i <= 4; i++) { const tt = t0 + (t1 - t0) * i / 4; trx.fillText(fmtT(tt), X(tt), h - B + 8); }
+    const line = (key, col, wdt, dash) => {
+      trx.strokeStyle = col; trx.lineWidth = wdt; trx.setLineDash(dash || []); trx.beginPath();
+      hist.forEach((p, n) => n ? trx.lineTo(X(p.t), Y(p[key])) : trx.moveTo(X(p.t), Y(p[key])));
+      trx.stroke(); trx.setLineDash([]);
+    };
+    line("mc", css("--warn"), 2.5); line("ms", css("--ink"), 2); line("n1", css("--ntc"), 2.5); line("n2", css("--ntc"), 2.5, [8, 6]);
+  }
+  const vc = document.getElementById("volts"), vcx = vc.getContext("2d");
+  function drawVolts(I) {
+    const w = vc.width, h = vc.height, L = 64, R = 12, T = 16, B = 34;
+    vcx.clearRect(0, 0, w, h);
+    const v = Array.from(socG, s => ocv(s) - I * P.R_cell);
+    const mean = v.reduce((a, b) => a + b, 0) / v.length;
+    const d = v.map(x => (x - mean) * 1000);
+    const lim = Math.max(1, Math.ceil(Math.max(...d.map(Math.abs)) * 1.2));
+    const Y = val => T + (h - T - B) * (0.5 - val / (2 * lim));
+    vcx.strokeStyle = css("--line"); vcx.lineWidth = 1; vcx.fillStyle = css("--mute");
+    vcx.font = `${20}px ${css("--font-data")}`; vcx.textAlign = "right"; vcx.textBaseline = "middle";
+    for (const val of [-lim, 0, lim]) { vcx.beginPath(); vcx.moveTo(L, Y(val)); vcx.lineTo(w - R, Y(val)); vcx.stroke(); vcx.fillText(`${val > 0 ? "+" : ""}${val} mV`, L - 6, Y(val)); }
+    const bw = (w - L - R) / NS;
+    for (let g = 0; g < NS; g++) {
+      const hasShort = Array.from({ length: NP }, (_, j) => Risc[g * NP + j] > 0).some(Boolean);
+      vcx.fillStyle = hasShort ? css("--warn") : css("--accent");
+      const y0 = Y(0), y1 = Y(d[g]);
+      vcx.fillRect(L + g * bw + bw * 0.15, Math.min(y0, y1), bw * 0.7, Math.max(1.5, Math.abs(y1 - y0)));
+      if (g % 2 === 0) { vcx.fillStyle = css("--mute"); vcx.textAlign = "center"; vcx.textBaseline = "top"; vcx.fillText(String(g + 1), L + g * bw + bw / 2, h - B + 8); }
+    }
+  }
+  function fmtT(s) { return s < 120 ? `${s.toFixed(0)} s` : s < 7200 ? `${(s / 60).toFixed(1)} min` : `${(s / 3600).toFixed(2)} h`; }
+
+  // ---------------- readouts
+  const $ = id => document.getElementById(id);
+  function cellName(k) { return `group ${grp[k] + 1}, row ${rowOf[k] + 1}`; }
+  function readouts(I, tout) {
+    let ks = 0, kc = 0;
+    for (let k = 1; k < N; k++) { if (Ts[k] > Ts[ks]) ks = k; if (Tc[k] > Tc[kc]) kc = k; }
+    $("ntc1").textContent = Ts[NTC1].toFixed(2) + " °C";
+    $("ntc2").textContent = Ts[NTC2].toFixed(2) + " °C";
+    $("maxs").textContent = Ts[ks].toFixed(1) + " °C"; $("maxs-at").textContent = cellName(ks);
+    $("maxc").textContent = Tc[kc].toFixed(1) + " °C"; $("maxc-at").textContent = cellName(kc);
+    $("t-mc").classList.toggle("alarm", Tc[kc] > 50); $("t-ms").classList.toggle("alarm", Ts[ks] > 45);
+    $("imod").textContent = (I * NP).toFixed(0) + " A"; $("icell").textContent = `${I.toFixed(1)} A per cell (${(I / P.Q_Ah).toFixed(2)} C)`;
+    $("tout").textContent = tout.toFixed(2) + " °C";
+    $("tclock").textContent = "t = " + fmtT(t);
+    return { ms: Ts[ks], mc: Tc[kc] };
+  }
+
+  // ---------------- controls
+  function labels() {
+    $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C (${(+ui.crate.value * P.Q_Ah).toFixed(0)} A/cell)`;
+    $("tin-v").textContent = `${ui.tin.value} °C`;
+    $("flow-v").textContent = `${(+ui.flow.value).toFixed(1)} L/min`;
+  }
+  ["crate", "tin", "flow"].forEach(id => ui[id].addEventListener("input", labels));
+  $("play").addEventListener("click", () => { running = !running; $("play").textContent = running ? "Pause" : "Run"; });
+  $("reset").addEventListener("click", () => { reset(); });
+  $("clear").addEventListener("click", () => { Risc.fill(0); });
+  $("m-surf").addEventListener("click", () => { mode = "surf"; $("m-surf").setAttribute("aria-pressed", "true"); $("m-core").setAttribute("aria-pressed", "false"); });
+  $("m-core").addEventListener("click", () => { mode = "core"; $("m-core").setAttribute("aria-pressed", "true"); $("m-surf").setAttribute("aria-pressed", "false"); });
+  function pick(ev) {
+    const r = cv.getBoundingClientRect(), sx = cv.width / r.width;
+    const x = (ev.clientX - r.left) * sx, y = (ev.clientY - r.top) * sx, g = geom();
+    for (let k = 0; k < N; k++) if (Math.hypot(x - (g.ox + cx[k] * g.s), y - (g.oy + cy[k] * g.s)) < D / 2 * g.s) return k;
+    return -1;
+  }
+  cv.addEventListener("click", ev => { const k = pick(ev); if (k >= 0) Risc[k] = Risc[k] > 0 ? 0 : +ui.risc.value; });
+  const tip = $("tip");
+  cv.addEventListener("mousemove", ev => {
+    const k = pick(ev);
+    if (k < 0) { tip.hidden = true; return; }
+    const box = $("mapbox").getBoundingClientRect();
+    let Q = 0; // shown as the cell's heat including the short
+    tip.innerHTML = `${cellName(k)}${k === NTC1 ? " · NTC 1" : k === NTC2 ? " · NTC 2" : ""}<br>surface ${Ts[k].toFixed(2)} °C · core ${Tc[k].toFixed(2)} °C` +
+      (Risc[k] > 0 ? `<br>short ${Risc[k]} Ω · ${(Math.pow(ocv(socG[grp[k]]), 2) / Risc[k]).toFixed(2)} W` : "<br>click to add a short");
+    tip.hidden = false;
+    const tx = ev.clientX - box.left + 14, ty = ev.clientY - box.top + 14;
+    tip.style.left = Math.min(tx, box.width - 230) + "px"; tip.style.top = ty + "px";
+  });
+  cv.addEventListener("mouseleave", () => { tip.hidden = true; });
+
+  // ---------------- loop
+  reset(); labels();
+  // example start: one 3 ohm short in group 12, row 5, as in the static drawing
+  Risc[11 * NP + 4] = 3;
+  let last = performance.now(), acc = 0, lastI = 0, lastTout = +ui.tin.value, lastHist = -1e9;
+  // warm start so the first frame already shows a developed field
+  for (let n = 0; n < 1200; n++) { const r = step(0.5); lastI = r.I; lastTout = r.tout; if (t - lastHist >= 5) { const m = readouts(lastI, lastTout); hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: m.ms, mc: m.mc }); lastHist = t; } }
+  function frame(now) {
+    const realDt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (running) {
+      acc += realDt * +ui.speed.value;
+      let n = 0;
+      while (acc >= 0.5 && n < 4000) { const r = step(0.5); lastI = r.I; lastTout = r.tout; acc -= 0.5; n++;
+        if (t - lastHist >= Math.max(2, +ui.speed.value / 15)) { const m = { ms: Math.max(...Ts), mc: Math.max(...Tc) }; hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: m.ms, mc: m.mc }); lastHist = t; if (hist.length > 900) hist.shift(); } }
+    }
+    drawMap(); readouts(lastI, lastTout); drawTrend(); drawVolts(lastI);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
