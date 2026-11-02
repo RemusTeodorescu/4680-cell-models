@@ -1,7 +1,7 @@
 {
   "name": "k5twin (S32K566 M7 + eIQ Auto twin)",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
-  "postCreateCommand": "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-arm gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch && pip install -q numpy scipy ai-edge-litert",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "postCreateCommand": "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-arm gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch python3-pip python3-numpy python3-scipy && pip3 install -q --break-system-packages ai-edge-litert",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/Internal-thermal-scanner-of-4680-cells-with-NXP-S32K5-BMS",
   "forwardPorts": [
     8765

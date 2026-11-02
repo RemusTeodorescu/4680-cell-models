@@ -1,12 +1,31 @@
 {
   "name": "k5twin-gpu (local, NVIDIA GPU for training thermal networks)",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
-  "runArgs": ["--gpus", "all"],
-  "hostRequirements": { "gpu": "optional" },
-  "postCreateCommand": "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-arm gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch && pip install -q numpy scipy ai-edge-litert onnx && pip install -q torch --index-url https://download.pytorch.org/whl/cu128",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "runArgs": [
+    "--gpus",
+    "all"
+  ],
+  "hostRequirements": {
+    "gpu": "optional"
+  },
+  "postCreateCommand": "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-arm gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch python3-pip python3-numpy python3-scipy && pip3 install -q --break-system-packages ai-edge-litert onnx && pip3 install -q --break-system-packages torch --index-url https://download.pytorch.org/whl/cu128",
   "postStartCommand": "[ -d /workspaces/s32k5-thermal-scanner-projects ] || git clone -q https://github.com/RemusTeodorescu/s32k5-thermal-scanner-projects /workspaces/s32k5-thermal-scanner-projects || echo 'eIQ Auto projects repository not accessible - clone it with your own credentials'",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/Internal-thermal-scanner-of-4680-cells-with-NXP-S32K5-BMS",
-  "forwardPorts": [8765],
-  "portsAttributes": { "8765": { "label": "k5twin GUI", "onAutoForward": "openBrowser" } },
-  "customizations": { "vscode": { "extensions": ["ms-python.python", "ms-toolsai.jupyter"] } }
+  "forwardPorts": [
+    8765
+  ],
+  "portsAttributes": {
+    "8765": {
+      "label": "k5twin GUI",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  }
 }
