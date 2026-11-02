@@ -27,6 +27,7 @@ This folder holds the tools, results and, later, the papers of this work. It is 
 ## k5twin: test a network before flashing
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RemusTeodorescu/4680-cell-models/blob/internal-thermal-scanner-s32k5/Internal-thermal-scanner-of-4680-cells-with-NXP-S32K5-BMS/notebooks/k5twin_colab.ipynb)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/RemusTeodorescu/4680-cell-models/tree/internal-thermal-scanner-s32k5?devcontainer_path=.devcontainer%2Fk5twin%2Fdevcontainer.json)
 
 k5twin runs a compiled eIQ Auto network on an emulated Cortex-M7 and reports four things:
 - the outputs;
@@ -37,6 +38,7 @@ k5twin runs a compiled eIQ Auto network on an emulated Cortex-M7 and reports fou
 It has a GUI and a GDB debugger. Details: [`k5twin/README.md`](k5twin/README.md).
 
 - **Colab:** use the badge above. You supply your own eIQ Auto project zips; see the notebook.
+- **GitHub Codespaces:** use the Codespaces badge. It creates a cloud machine with the tools installed (first start takes a few minutes); then run `python3 k5twin/k5twin_gui.py --root .` in the folder and open the forwarded port 8765. Upload your eIQ Auto project by dragging it into the file explorer.
 - **Locally (WSL Ubuntu 22.04/24.04 or Linux):** run `python3 k5twin/k5twin_gui.py --root <folder with eIQ Auto projects>`, then open `http://localhost:8765`.
 
 ## Results so far
@@ -63,7 +65,9 @@ The twin works with any eIQ Auto project you have; the two example input files h
 
 ## Credits
 
-- Remus Teodorescu (AAU Energy), with Arnold Sequeira (AAU Energy; board bring-up, eIQ Auto deployment and the board measurements used for calibration) and Nicolai A. Weinreich (AAU Energy).
+- Remus Teodorescu (AAU Energy), with
+  - Arnold Sequeira (AAU Energy, until autumn 2026): board bring-up, eIQ Auto deployment, the CPU/NPU studies and the board measurements used for calibration;
+  - Nicolai A. Weinreich (AAU Energy, from November 2026): implementation on the S32K5 platform.
 - Supervision: Wenzel Prochazka (NXP Semiconductors Austria).
 
 ## Licence
