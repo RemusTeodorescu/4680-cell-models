@@ -3,7 +3,30 @@
   "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
   "postCreateCommand": "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-arm gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch && pip install -q numpy scipy ai-edge-litert",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/Internal-thermal-scanner-of-4680-cells-with-NXP-S32K5-BMS",
-  "forwardPorts": [8765],
-  "portsAttributes": { "8765": { "label": "k5twin GUI", "onAutoForward": "openBrowser" } },
-  "customizations": { "vscode": { "extensions": ["ms-python.python"] } }
+  "forwardPorts": [
+    8765
+  ],
+  "portsAttributes": {
+    "8765": {
+      "label": "k5twin GUI",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python"
+      ]
+    },
+    "codespaces": {
+      "repositories": {
+        "RemusTeodorescu/s32k5-thermal-scanner-projects": {
+          "permissions": {
+            "contents": "read"
+          }
+        }
+      }
+    }
+  },
+  "postStartCommand": "[ -d /workspaces/s32k5-thermal-scanner-projects ] || git clone -q https://github.com/RemusTeodorescu/s32k5-thermal-scanner-projects /workspaces/s32k5-thermal-scanner-projects || echo 'eIQ Auto projects repository not accessible - upload your projects instead'"
 }

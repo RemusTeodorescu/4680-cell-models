@@ -38,7 +38,7 @@ k5twin runs a compiled eIQ Auto network on an emulated Cortex-M7 and reports fou
 It has a GUI and a GDB debugger. Details: [`k5twin/README.md`](k5twin/README.md).
 
 - **Colab:** use the badge above. You supply your own eIQ Auto project zips; see the notebook.
-- **GitHub Codespaces:** use the Codespaces badge. It creates a cloud machine with the tools installed (first start takes a few minutes); then run `python3 k5twin/k5twin_gui.py --root .` in the folder and open the forwarded port 8765. Upload your eIQ Auto project by dragging it into the file explorer.
+- **GitHub Codespaces:** use the Codespaces badge. It creates a cloud machine with the tools installed (first start takes a few minutes); then run `python3 k5twin/k5twin_gui.py --root /workspaces/s32k5-thermal-scanner-projects/projects` and open the forwarded port 8765. Members of the project with access to the private eIQ Auto projects repository get it cloned automatically (accept the access request when the codespace is created); others upload their own eIQ Auto project by dragging it into the file explorer.
 - **Locally (WSL Ubuntu 22.04/24.04 or Linux):** run `python3 k5twin/k5twin_gui.py --root <folder with eIQ Auto projects>`, then open `http://localhost:8765`.
 
 ## Results so far
