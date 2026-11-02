@@ -1,0 +1,21 @@
+bundle      onnx2tf_saved_model_p0_p0_m7  (NPU/Neutron)
+rc          0
+instructions 3,357 executed by the bundle
+   libjit_insert_tensor_i8_2_specialized              1,856
+   libjit_insert_tensor_i8_1_specialized                908
+   libjit_extract_tensor_i8_3_specialized               445
+   eiqa_neutron_graph_operator                           78
+   onnx2tf_saved_model_p0_p0_m7                          64
+   main                                                   5
+NPU dispatches 1, bytes handed to the NPU 8,824
+CPU-side instructions (ops not offloaded) 3,357
+predicted board time  180.3 us   (+/- about 3 %, leave-one-out on the calibration set)
+   calibration: S32K566 M7_0 @ 200 MHz, eIQ Auto 3.14.1, Session::Execute wall clock (layer count given); batch 200: + 44.0 us NPU compute from the neutron-converter estimate
+stack peak  56 B (bundle call only)
+weights 7,680 B   io 1,600 B   activations 3,136 B
+S32K566 M7_0 memory with this bundle swapped into the board firmware:
+   int_dtcm_cm7                       1,072 /    61,440 B    1.7 %  ok
+   int_cmram_cm7_c0                 515,408 / 4,192,256 B   12.3 %  ok
+   int_sram_cm7_c0                  277,096 /   524,288 B   52.9 %  ok
+   int_sram_no_cacheable_cm7_c0          32 /   524,032 B    0.0 %  ok
+report -> ../results/npu_int8_batch200.json

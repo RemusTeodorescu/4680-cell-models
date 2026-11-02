@@ -1,0 +1,198 @@
+[
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h16_p0_m7.h",
+  "us": 116.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=16",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h16_p0_p0_m7.h",
+  "us": 135.8,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=16",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h24_p0_m7.h",
+  "us": 152.8,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=24",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h24_p0_p0_m7.h",
+  "us": 136.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=24",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h32_p0_m7.h",
+  "us": 203.2,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=32",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h32_p0_p0_m7.h",
+  "us": 136.6,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=32",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h48_p0_m7.h",
+  "us": 328.2,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=48",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h48_p0_p0_m7.h",
+  "us": 137.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=48",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h64_p0_m7.h",
+  "us": 500.0,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=64",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h64_p0_p0_m7.h",
+  "us": 139.2,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=64",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h96_p0_m7.h",
+  "us": 958.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=96",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h96_p0_p0_m7.h",
+  "us": 142.6,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=96",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h128_p0_m7.h",
+  "us": 1594.6,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=128",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h128_p0_p0_m7.h",
+  "us": 148.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=128",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_sweep/models/trained_PINN_model_h192_p0_m7.h",
+  "us": 3336.8,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=192",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_sweep/models/saved_model_h192_p0_p0_m7.h",
+  "us": 167.2,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "width h=192",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_depth_sweep/models/trained_PINN_model_L2_p0_m7.h",
+  "us": 500.6,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=2",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_depth_sweep/models/saved_model_L2_p0_p0_m7.h",
+  "us": 139.8,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=2",
+  "layers": 3
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_depth_sweep/models/trained_PINN_model_L4_p0_m7.h",
+  "us": 1236.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=4",
+  "layers": 5
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_depth_sweep/models/saved_model_L4_p0_p0_m7.h",
+  "us": 152.0,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=4",
+  "layers": 5
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_depth_sweep/models/trained_PINN_model_L8_p0_m7.h",
+  "us": 2730.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=8",
+  "layers": 9
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_depth_sweep/models/saved_model_L8_p0_p0_m7.h",
+  "us": 177.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=8",
+  "layers": 9
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_depth_sweep/models/trained_PINN_model_L16_p0_m7.h",
+  "us": 5761.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=16",
+  "layers": 17
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_depth_sweep/models/saved_model_L16_p0_p0_m7.h",
+  "us": 228.0,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=16",
+  "layers": 17
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_depth_sweep/models/trained_PINN_model_L32_p0_m7.h",
+  "us": 11757.6,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=32",
+  "layers": 33
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_depth_sweep/models/saved_model_L32_p0_p0_m7.h",
+  "us": 330.4,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=32",
+  "layers": 33
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/cpu_glow_depth_sweep/models/trained_PINN_model_L64_p0_m7.h",
+  "us": 23419.2,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=64",
+  "layers": 65
+ },
+ {
+  "bundle": "../private/04_S32K5_Temperature_estimation_scaling/S32K5_Temperature_estimation/eiqa_runtime_app/data/neutron_depth_sweep/models/saved_model_L64_p0_p0_m7.h",
+  "us": 537.8,
+  "inputs": "../examples/hev2_sample1.json",
+  "sweep": "depth L=64",
+  "layers": 65
+ }
+]

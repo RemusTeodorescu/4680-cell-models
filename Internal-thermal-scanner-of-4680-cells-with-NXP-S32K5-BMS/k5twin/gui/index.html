@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>k5twin</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#1d2433; --mute:#5d6678; --line:#e2e6ee;
+  --accent:#2457c5; --accent-ink:#ffffff; --ok:#1f8a5b; --warn:#c27a00; --bad:#c23b3b;
+  --c1:#2457c5; --c2:#3fa7a0; --c3:#e0913a; --c4:#8b5cc7; --c5:#c2507a; --c6:#7f8a9c; --c7:#b8c2d4;
+  --chip:#eef2fa; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12151b; --panel:#1a1f28; --ink:#e7ebf2; --mute:#9aa4b6; --line:#2a313d;
+  --accent:#6b93ff; --accent-ink:#0d1220; --chip:#232a36; --c7:#3a4352;
+}}
+:root[data-theme="dark"]{ --bg:#12151b; --panel:#1a1f28; --ink:#e7ebf2; --mute:#9aa4b6; --line:#2a313d;
+  --accent:#6b93ff; --accent-ink:#0d1220; --chip:#232a36; --c7:#3a4352; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:18px 24px 10px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+header h1{font-size:20px;margin:0;letter-spacing:.2px}
+header .sub{color:var(--mute)}
+main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:18px;padding:8px 24px 32px}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:8px 16px 24px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mute);margin:0 0 12px}
+label{display:block;font-size:12px;color:var(--mute);margin:10px 0 4px}
+input[type=text],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:13px var(--mono)}
+.row{display:flex;gap:8px;align-items:center}
+button{border:0;border-radius:8px;padding:9px 14px;font:600 13px system-ui,sans-serif;cursor:pointer}
+.primary{background:var(--accent);color:var(--accent-ink)}
+.ghost{background:var(--chip);color:var(--ink)}
+button:disabled{opacity:.5;cursor:wait}
+.blist{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.bitem{padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.bitem:last-child{border-bottom:0}
+.bitem:hover{background:var(--chip)}
+.bitem.sel{background:var(--chip);box-shadow:inset 3px 0 0 var(--accent)}
+.bname{font:12px var(--mono);word-break:break-all}
+.brel{font-size:11px;color:var(--mute);word-break:break-all}
+.badge{font:600 11px system-ui;padding:2px 7px;border-radius:99px;white-space:nowrap;height:fit-content}
+.b-cpu{background:#dfe8fb;color:#1c4aa8}.b-npu{background:#dcf2ee;color:#17675f}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .b-cpu{background:#22325a;color:#b9ccff}:root:not([data-theme="light"]) .b-npu{background:#173a36;color:#9fe3d8}}
+.check{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px}
+.check input{margin-top:3px}
+.hint{font-size:12px;color:var(--mute)}
+.results{display:grid;gap:18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--mute)}
+.tile .v{font-size:24px;font-weight:650;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--mute)}
+.bar{height:12px;background:var(--chip);border-radius:6px;overflow:hidden;display:flex}
+.bar>span{display:block;height:100%}
+.mem-row{display:grid;grid-template-columns:minmax(110px,160px) minmax(90px,1fr) auto;gap:10px;align-items:center;margin:8px 0;font-size:13px}
+@media (max-width:640px){.mem-row{grid-template-columns:1fr}}
+.num{font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:600;font-size:12px}
+td.r,th.r{text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:12px;color:var(--mute)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.err{background:#fde8e8;color:#8a1f1f;border-radius:8px;padding:10px;font:12px var(--mono);white-space:pre-wrap}
+.empty{color:var(--mute);text-align:center;padding:50px 10px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px}
+@keyframes s{to{transform:rotate(360deg)}}
+.slider{display:grid;grid-template-columns:220px 1fr 70px;gap:10px;align-items:center;margin:6px 0}
+@media (max-width:640px){.slider{grid-template-columns:1fr}}
+code.cmd{display:block;background:var(--chip);padding:8px;border-radius:8px;font:12px var(--mono);word-break:break-all}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:1100px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>k5twin</h1>
+  <span class="sub">S32K566 Cortex-M7 + eIQ Auto: test a compiled network before flashing</span>
+</header>
+<main>
+  <section class="panel" id="setup">
+    <h2>1 · Find bundles</h2>
+    <label for="root">Project folder</label>
+    <div class="row"><input type="text" id="root"><button class="ghost" id="scan">Scan</button></div>
+    <label>Bundles found (<span id="nb">0</span>)</label>
+    <div class="blist" id="blist"><div class="empty" style="padding:20px">Scan a folder</div></div>
+
+    <h2 style="margin-top:18px">2 · Set up the run</h2>
+    <label for="inputs">Inputs (.json / .npz)</label>
+    <select id="inputs"></select>
+    <label for="board_elf">Board firmware ELF (memory baseline)</label>
+    <input type="text" id="board_elf" placeholder="auto-detected from build_*/bin">
+    <label for="board_map">Board firmware .map</label>
+    <input type="text" id="board_map">
+    <div id="npuopts">
+      <label for="layers">FC layers (NPU time model)</label>
+      <input type="text" id="layers" placeholder="e.g. 3">
+      <label for="neutron_log">eiqa.log (NPU compute estimate)</label>
+      <input type="text" id="neutron_log">
+      <label for="tflite">int8 TFLite before Neutron conversion (NPU numerics)</label>
+      <input type="text" id="tflite">
+    </div>
+    <label class="check"><input type="checkbox" id="fast_expf">
+      <span>Link <b>opt/fast_expf.c</b> in place of libm's expf<br><span class="hint">tests the tanh speed-up before changing the firmware</span></span></label>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="run" disabled>Run on twin</button>
+      <button class="ghost" id="debug" disabled>Start debugger</button>
+    </div>
+    <div id="dbg" class="hint" style="margin-top:10px"></div>
+  </section>
+
+  <section class="results" id="results">
+    <div class="panel empty" id="placeholder">Pick a bundle and press <b>Run on twin</b>.<br>The network's own machine code runs on an emulated Cortex-M7; time is calibrated on measured board runs.</div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (n, d=0) => n==null ? "–" : Number(n).toLocaleString("en-US",{maximumFractionDigits:d, minimumFractionDigits:d});
+const us = v => v==null ? "–" : (v >= 1000 ? fmt(v/1000,2)+" ms" : fmt(v,1)+" µs");
+const CLS = {fp_mem:["FP load/store","var(--c1)"], fp_arith:["FP arithmetic","var(--c2)"], int:["integer","var(--c3)"],
+             mem:["int load/store","var(--c4)"], branch:["branch","var(--c5)"], fp_div:["FP div/sqrt","var(--c6)"]};
+let BUNDLES=[], SEL=null, HISTORY=[];
+
+async function scan(){
+  const root = $("#root").value.trim();
+  $("#blist").innerHTML = '<div class="empty" style="padding:20px"><span class="spin"></span> scanning…</div>';
+  const r = await fetch("/api/scan?root="+encodeURIComponent(root)); const j = await r.json();
+  if (j.error){ $("#blist").innerHTML = `<div class="err">${j.error}</div>`; return; }
+  BUNDLES = j.bundles; $("#nb").textContent = BUNDLES.length; $("#root").value = j.root;
+  $("#blist").innerHTML = BUNDLES.map((b,i)=>`<div class="bitem" data-i="${i}">
+      <div><div class="bname">${b.name}</div><div class="brel">${b.rel}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <span class="badge ${b.neutron?'b-npu':'b-cpu'}">${b.neutron?'NPU int8':'CPU float32'}</span>
+        <span class="hint">batch ${b.rows}</span></div></div>`).join("") || '<div class="empty" style="padding:20px">No bundles found</div>';
+  document.querySelectorAll(".bitem").forEach(el=>el.onclick=()=>select(+el.dataset.i));
+  $("#inputs").innerHTML = j.inputs.map(p=>`<option value="${p}">${p.split("/").slice(-2).join("/")}</option>`).join("");
+  try{ localStorage.setItem("k5root", root); }catch(e){}
+}
+function select(i){
+  SEL = BUNDLES[i];
+  document.querySelectorAll(".bitem").forEach(el=>el.classList.toggle("sel", +el.dataset.i===i));
+  const g = SEL.guess||{};
+  $("#board_elf").value = g.board_elf||""; $("#board_map").value = g.board_map||"";
+  $("#neutron_log").value = g.neutron_log||""; $("#tflite").value = g.tflite||""; $("#layers").value = g.layers||"";
+  $("#npuopts").style.display = SEL.neutron ? "" : "none";
+  // pick an input file whose batch matches
+  const opts=[...$("#inputs").options]; const want = SEL.rows>1 ? /batch|x40/ : /sample/;
+  const o = opts.find(o=>want.test(o.value)); if(o) $("#inputs").value=o.value;
+  $("#run").disabled = false; $("#debug").disabled = SEL.neutron;
+}
+async function run(){
+  if(!SEL) return;
+  const body = {bundle:SEL.path, inputs:$("#inputs").value, board_elf:$("#board_elf").value, board_map:$("#board_map").value,
+                layers:$("#layers").value, neutron_log:$("#neutron_log").value, tflite:$("#tflite").value, fast_expf:$("#fast_expf").checked};
+  $("#run").disabled = true; $("#run").innerHTML = '<span class="spin"></span> running…';
+  try{
+    const r = await fetch("/api/run",{method:"POST",body:JSON.stringify(body)}); const j = await r.json();
+    if (j.error) { showError(j.error); return; }
+    HISTORY.push(j); render(j);
+  } finally { $("#run").disabled=false; $("#run").textContent="Run on twin"; }
+}
+async function debug(){
+  const r = await fetch("/api/debug",{method:"POST",body:JSON.stringify({bundle:SEL.path, inputs:$("#inputs").value})});
+  const j = await r.json();
+  $("#dbg").innerHTML = j.error ? `<div class="err">${j.error}</div>` :
+    `QEMU is halted at reset with a GDB server on :${j.port}. In a WSL terminal:<code class="cmd">${j.gdb}</code>`;
+}
+function showError(e){ $("#results").innerHTML = `<div class="panel"><h2>Run failed</h2><div class="err">${e.replace(/</g,"&lt;")}</div></div>`; }
+
+function timeParts(j){
+  const c = j.calibration.cpu; if(!c.per_class_us || !j.by_class) return null;
+  const parts = Object.keys(CLS).map(k=>({k, us:(c.per_class_us[k]||0)*(j.by_class[k]||0)}));
+  let fixed = j.summary.neutron ? j.predicted_us - parts.reduce((a,p)=>a+p.us,0) : c.intercept_us;
+  return {fixed, parts};
+}
+function render(j){
+  const s = j.summary, rows = j.batch_rows||1, mem = j.memory.regions||{};
+  const sram = mem.int_sram_cm7_c0, mram = mem.int_cmram_cm7_c0;
+  const err = j.time_note ? Math.round(100*j.time_note.loo_max_rel_err) : null;
+  let h = `<div class="tiles">
+    <div class="tile"><div class="k">Predicted board time</div><div class="v">${us(j.predicted_us)}</div><div class="s">${err!=null?"± about "+err+" % (calibration)":"no calibration"}</div></div>
+    <div class="tile"><div class="k">Per row (cell)</div><div class="v">${us(j.predicted_us/rows)}</div><div class="s">batch of ${rows}</div></div>
+    <div class="tile"><div class="k">Share of one M7 at 2 s update</div><div class="v">${fmt(100*j.predicted_us/2e6,2)} %</div><div class="s">one call per 2 s</div></div>
+    <div class="tile"><div class="k">Instructions (bundle)</div><div class="v">${fmt(j.instructions)}</div><div class="s">${s.neutron?`${j.neutron_calls} NPU dispatch, ${fmt(j.npu_bytes)} B to NPU`:"executed on the M7"}</div></div>
+    <div class="tile"><div class="k">Stack peak</div><div class="v">${fmt(j.stack_bytes)} B</div><div class="s">during the bundle call</div></div>
+  </div>`;
+  // time breakdown
+  const tp = timeParts(j);
+  if (tp && j.predicted_us){
+    const all = [{k:"fixed",us:tp.fixed}].concat(tp.parts).filter(p=>p.us>0.05);
+    const tot = all.reduce((a,p)=>a+p.us,0);
+    const col = k => k==="fixed" ? "var(--c7)" : CLS[k][1], lab = k => k==="fixed" ? (s.neutron?"NPU dispatch + compute":"fixed cost per call (eIQ runtime)") : CLS[k][0];
+    h += `<div class="panel"><h2>Where the time goes (calibrated model)</h2>
+      <div class="bar" style="height:22px">${all.map(p=>`<span title="${lab(p.k)}: ${us(p.us)}" style="width:${100*p.us/tot}%;background:${col(p.k)}"></span>`).join("")}</div>
+      <div class="legend">${all.map(p=>`<span><i style="background:${col(p.k)}"></i>${lab(p.k)} ${us(p.us)} (${fmt(100*p.us/tot,0)} %)</span>`).join("")}</div>
+      <p class="hint" style="margin:10px 0 0">${j.time_note?j.time_note.note:""}</p></div>`;
+  }
+  // memory
+  h += `<div class="two"><div class="panel"><h2>Memory · S32K566 M7_0 with this bundle in the board firmware</h2>`;
+  if (Object.keys(mem).length){
+    const names = {int_sram_cm7_c0:"SRAM (cacheable)", int_cmram_cm7_c0:"MRAM (code + weights)", int_dtcm_cm7:"DTCM", int_itcm_cm7:"ITCM", int_sram_no_cacheable_cm7_c0:"SRAM (non-cacheable)"};
+    for (const [k,r] of Object.entries(mem)){
+      if(!r.used) continue;
+      const c = !r.ok ? "var(--bad)" : r.pct>80 ? "var(--warn)" : "var(--ok)";
+      h += `<div class="mem-row"><div>${names[k]||k}</div><div class="bar"><span style="width:${Math.min(100,r.pct)}%;background:${c}"></span></div>
+            <div class="num">${fmt(r.used)} / ${fmt(r.size)} B · ${fmt(r.pct,1)} %</div></div>`;
+    }
+  } else h += `<p class="hint">Give a board ELF and .map to see the regions.</p>`;
+  h += `<table style="margin-top:8px"><tr><th>Bundle buffer</th><th class="r">bytes</th><th>placed in</th></tr>
+        <tr><td>weights (constantWeight)</td><td class="r num">${fmt(s.constant_bytes)}</td><td>MRAM (GLOW_WEIGHTS)</td></tr>
+        <tr><td>inputs/outputs (mutableWeight)</td><td class="r num">${fmt(s.mutable_bytes)}</td><td>SRAM (GLOW_IO)</td></tr>
+        <tr><td>activations</td><td class="r num">${fmt(s.activation_bytes)}</td><td>SRAM (GLOW_IO)</td></tr></table></div>`;
+  // hot functions
+  const fx = Object.entries(j.by_function||{}).filter(([n])=>!/^(main|k5_mark)/.test(n)).slice(0,8);
+  const fmax = Math.max(1,...fx.map(f=>f[1]));
+  h += `<div class="panel"><h2>Hot functions (instructions)</h2>${fx.map(([n,c])=>`
+     <div style="margin:7px 0"><div class="row" style="justify-content:space-between"><span class="num">${n.replace(/_specialized$/,"")}</span><span class="num">${fmt(c)} · ${fmt(100*c/j.instructions,0)} %</span></div>
+     <div class="bar" style="height:7px"><span style="width:${100*c/fmax}%;background:var(--c1)"></span></div></div>`).join("")}
+     <p class="hint">${(j.extra_sources||[]).length?"Linked: "+j.extra_sources.map(x=>x.split("/").pop()).join(", "):""}</p></div></div>`;
+  // what-if
+  if (!s.neutron && tp){
+    h += `<div class="panel"><h2>What-if (estimates outside the calibration)</h2>
+      <div class="slider"><span>FP load/store cost, cycles<br><span class="hint">calibrated 7.7 (data in MRAM/SRAM); TCM ≈ 1–2</span></span><input type="range" id="w_mem" min="1" max="8" step="0.1" value="${fmt(200*j.calibration.cpu.per_class_us.fp_mem,1)}"><span class="num" id="w_mem_v"></span></div>
+      <div class="slider"><span>M7 cores sharing the 200 rows</span><input type="range" id="w_cores" min="1" max="4" step="1" value="1"><span class="num" id="w_cores_v"></span></div>
+      <div class="slider"><span>Fixed cost per call, µs</span><input type="range" id="w_fix" min="0" max="${Math.ceil(tp.fixed)}" step="1" value="${fmt(tp.fixed,0)}"><span class="num" id="w_fix_v"></span></div>
+      <div class="tiles" style="margin-top:10px"><div class="tile"><div class="k">Estimated time</div><div class="v" id="w_t"></div><div class="s" id="w_s"></div></div></div></div>`;
+  }
+  // outputs
+  const outs = Object.entries(j.outputs).filter(([k])=>!/^(space|time|measurement|serving_default)/.test(k));
+  if (outs.length){
+    const [name, vals] = outs[outs.length-1]; const tfl = j.tflite_outputs ? Object.values(j.tflite_outputs)[0] : null;
+    h += `<div class="panel"><h2>Outputs · first rows</h2>
+      <div class="row" style="gap:12px;flex-wrap:wrap"><span class="hint">display as value × </span><input type="text" id="o_sc" value="19.455988" style="width:120px"><span class="hint">+</span><input type="text" id="o_of" value="7.582792" style="width:120px"><span class="hint">(°C for Arnold's PINN; use 1 and 0 for raw)</span></div>
+      <table id="otab" style="margin-top:8px"></table></div>`;
+    setTimeout(()=>{ const draw=()=>{ const sc=+$("#o_sc").value, of=+$("#o_of").value;
+      const src = s.neutron && tfl ? tfl : vals;
+      $("#otab").innerHTML = `<tr><th>row</th><th class="r">${s.neutron&&tfl?"int8 model (NPU numerics)":"twin output"}</th>${j.truth?'<th class="r">reference in input file</th><th class="r">diff</th>':''}</tr>`+
+        src.slice(0,10).map((v,i)=>`<tr><td>${i}</td><td class="r num">${(v*sc+of).toFixed(4)}</td>${j.truth?`<td class="r num">${j.truth[i].toFixed(4)}</td><td class="r num">${(v*sc+of-j.truth[i]).toFixed(4)}</td>`:''}</tr>`).join("");};
+      $("#o_sc").oninput=draw; $("#o_of").oninput=draw; draw(); },0);
+  }
+  // history
+  h += `<div class="panel"><h2>Runs in this session</h2><table><tr><th>run</th><th class="r">time</th><th class="r">instructions</th><th class="r">SRAM</th><th class="r">MRAM</th><th class="r">vs first</th></tr>${
+    HISTORY.map((r,i)=>{const m=r.memory.regions||{}; const d = i? (100*(r.predicted_us/HISTORY[0].predicted_us-1)).toFixed(1)+" %":"";
+      return `<tr><td>${r.label}</td><td class="r num">${us(r.predicted_us)}</td><td class="r num">${fmt(r.instructions)}</td><td class="r num">${m.int_sram_cm7_c0?fmt(m.int_sram_cm7_c0.pct,1)+" %":"–"}</td><td class="r num">${m.int_cmram_cm7_c0?fmt(m.int_cmram_cm7_c0.pct,1)+" %":"–"}</td><td class="r num">${d}</td></tr>`}).join("")}</table>
+    <p class="hint">Run on twin: ${j.wall_s} s wall clock on this PC.</p></div>`;
+  $("#results").innerHTML = h;
+  if ($("#w_mem")){
+    const c = j.calibration.cpu;
+    const upd = ()=>{ const cyc=+$("#w_mem").value, cores=+$("#w_cores").value, fix=+$("#w_fix").value;
+      let comp = 0; for (const k of Object.keys(CLS)) comp += (k==="fp_mem" ? cyc/200 : (c.per_class_us[k]||0)) * (j.by_class[k]||0);
+      const t = fix + comp/cores;
+      $("#w_mem_v").textContent = cyc.toFixed(1); $("#w_cores_v").textContent = cores; $("#w_fix_v").textContent = fix;
+      $("#w_t").textContent = us(t); $("#w_s").textContent = `${(j.predicted_us/t).toFixed(1)}× vs calibrated prediction`; };
+    ["#w_mem","#w_cores","#w_fix"].forEach(id=>$(id).oninput=upd); upd();
+  }
+}
+$("#scan").onclick = scan; $("#run").onclick = run; $("#debug").onclick = debug;
+let r0 = ""; try{ r0 = localStorage.getItem("k5root")||""; }catch(e){}
+$("#root").value = new URLSearchParams(location.search).get("root") || r0 || "";
+scan();
+</script>
+</body>
+</html>

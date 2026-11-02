@@ -8,6 +8,7 @@ instructions.
 |---|---|---|
 | Parameterisation of NMC and LFP 4680 cells for electrochemical and thermal modelling | submitted; preprint on arXiv | [`Parameterisation-of-NMC-and-LFP-4680-cells/`](Parameterisation-of-NMC-and-LFP-4680-cells/) |
 | Multi-timescale thermal Doyle–Fuller–Newman model of LiFePO₄ 4680 cells for dynamic loads from milliseconds to hours | in preparation | [`Multi-timescale-thermal-DFN-of-LFP-4680-cells/`](Multi-timescale-thermal-DFN-of-LFP-4680-cells/) |
+| Internal thermal scanner of 4680 cells with NXP S32K5 BMS (project: tools and results; papers to follow) | work in progress | [`Internal-thermal-scanner-of-4680-cells-with-NXP-S32K5-BMS/`](Internal-thermal-scanner-of-4680-cells-with-NXP-S32K5-BMS/) |
 
 ## Licence
 

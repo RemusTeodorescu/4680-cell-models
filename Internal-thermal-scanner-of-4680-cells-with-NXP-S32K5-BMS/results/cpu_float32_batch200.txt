@@ -1,0 +1,19 @@
+bundle      trained_PINN_model_p0_m7  (CPU/float32)
+rc          0
+instructions 976,969 executed by the bundle
+   __ieee754_expf                                   325,880
+   libjit_fc_f_5_specialized                        254,812
+   expf                                             121,600
+   libjit_fc_f_3_specialized                        112,813
+   libjit_stacked_kernel.1_4_specialized             51,210
+   libjit_stacked_kernel.2_6_specialized             51,210
+predicted board time  9,689.6 us   (+/- about 6 %, leave-one-out on the calibration set)
+   calibration: S32K566 M7_0 @ 200 MHz, eIQ Auto 3.14.1, Session::Execute wall clock
+stack peak  92 B (bundle call only)
+weights 1,664 B   io 5,696 B   activations 25,600 B
+S32K566 M7_0 memory with this bundle swapped into the board firmware:
+   int_dtcm_cm7                       1,072 /    61,440 B    1.7 %  ok
+   int_cmram_cm7_c0                 490,792 / 4,192,256 B   11.7 %  ok
+   int_sram_cm7_c0                  302,576 /   524,288 B   57.7 %  ok
+   int_sram_no_cacheable_cm7_c0          32 /   524,032 B    0.0 %  ok
+report -> ../results/cpu_float32_batch200.json

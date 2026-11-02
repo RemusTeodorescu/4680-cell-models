@@ -1,0 +1,199 @@
+{
+ "created_from": "calibration/measured_sweeps.json (Arnold Sequeira width and depth sweeps, CPU_vs_NPU_Report_V1 Tables 4-5)",
+ "note": "S32K566 M7_0 @ 200 MHz, eIQ Auto 3.14.1, Session::Execute wall clock",
+ "cpu": {
+  "intercept_us": 62.58592407968256,
+  "per_class_us": {
+   "fp_div": 0.0,
+   "fp_arith": 0.001853230882550302,
+   "fp_mem": 0.03845756183590985,
+   "mem": 0.0,
+   "branch": 0.0,
+   "int": 0.0004547273735436707
+  },
+  "cycles_per_class_at_200MHz": {
+   "fp_div": 0.0,
+   "fp_arith": 0.37,
+   "fp_mem": 7.69,
+   "mem": 0.0,
+   "branch": 0.0,
+   "int": 0.09
+  },
+  "fit_max_rel_err": 0.04786560360189668,
+  "loo_max_rel_err": 0.05631254496220235,
+  "n": 14,
+  "note": "S32K566 M7_0 @ 200 MHz, eIQ Auto 3.14.1, Session::Execute wall clock",
+  "points": [
+   {
+    "bundle": "trained_PINN_model_h16_p0_m7",
+    "measured_us": 116.4,
+    "predicted_us": 110.8
+   },
+   {
+    "bundle": "trained_PINN_model_h24_p0_m7",
+    "measured_us": 152.8,
+    "predicted_us": 149.7
+   },
+   {
+    "bundle": "trained_PINN_model_h32_p0_m7",
+    "measured_us": 203.2,
+    "predicted_us": 200.6
+   },
+   {
+    "bundle": "trained_PINN_model_h48_p0_m7",
+    "measured_us": 328.2,
+    "predicted_us": 328.4
+   },
+   {
+    "bundle": "trained_PINN_model_h64_p0_m7",
+    "measured_us": 500.0,
+    "predicted_us": 503.3
+   },
+   {
+    "bundle": "trained_PINN_model_h96_p0_m7",
+    "measured_us": 958.4,
+    "predicted_us": 963.6
+   },
+   {
+    "bundle": "trained_PINN_model_h128_p0_m7",
+    "measured_us": 1594.6,
+    "predicted_us": 1600.7
+   },
+   {
+    "bundle": "trained_PINN_model_h192_p0_m7",
+    "measured_us": 3336.8,
+    "predicted_us": 3335.3
+   },
+   {
+    "bundle": "trained_PINN_model_L2_p0_m7",
+    "measured_us": 500.6,
+    "predicted_us": 503.3
+   },
+   {
+    "bundle": "trained_PINN_model_L4_p0_m7",
+    "measured_us": 1236.4,
+    "predicted_us": 1236.5
+   },
+   {
+    "bundle": "trained_PINN_model_L8_p0_m7",
+    "measured_us": 2730.4,
+    "predicted_us": 2727.1
+   },
+   {
+    "bundle": "trained_PINN_model_L16_p0_m7",
+    "measured_us": 5761.4,
+    "predicted_us": 5758.2
+   },
+   {
+    "bundle": "trained_PINN_model_L32_p0_m7",
+    "measured_us": 11757.6,
+    "predicted_us": 11759.3
+   },
+   {
+    "bundle": "trained_PINN_model_L64_p0_m7",
+    "measured_us": 23419.2,
+    "predicted_us": 23419.0
+   }
+  ]
+ },
+ "npu": {
+  "bytes_only": {
+   "intercept_us": 123.09198127186042,
+   "us_per_byte": 0.0011525274539499514,
+   "loo_max_rel_err": 0.08471098112262476
+  },
+  "with_layers": {
+   "intercept_us": 122.71918420662698,
+   "us_per_byte": 0.0007371217017029314,
+   "us_per_layer": 2.309549474877705,
+   "loo_max_rel_err": 0.029459111295525076
+  },
+  "note": "S32K566 M7_0 @ 200 MHz, eIQ Auto 3.14.1, Session::Execute wall clock",
+  "points": [
+   {
+    "bundle": "saved_model_h16_p0_p0_m7",
+    "measured_us": 135.8,
+    "bytes_to_npu": 7390,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h24_p0_p0_m7",
+    "measured_us": 136.4,
+    "bytes_to_npu": 7966,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h32_p0_p0_m7",
+    "measured_us": 136.6,
+    "bytes_to_npu": 8670,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h48_p0_p0_m7",
+    "measured_us": 137.4,
+    "bytes_to_npu": 10462,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h64_p0_p0_m7",
+    "measured_us": 139.2,
+    "bytes_to_npu": 12766,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h96_p0_p0_m7",
+    "measured_us": 142.6,
+    "bytes_to_npu": 18910,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h128_p0_p0_m7",
+    "measured_us": 148.4,
+    "bytes_to_npu": 27102,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_h192_p0_p0_m7",
+    "measured_us": 167.2,
+    "bytes_to_npu": 49630,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_L2_p0_p0_m7",
+    "measured_us": 139.8,
+    "bytes_to_npu": 12766,
+    "layers": 3
+   },
+   {
+    "bundle": "saved_model_L4_p0_p0_m7",
+    "measured_us": 152.0,
+    "bytes_to_npu": 23902,
+    "layers": 5
+   },
+   {
+    "bundle": "saved_model_L8_p0_p0_m7",
+    "measured_us": 177.4,
+    "bytes_to_npu": 46190,
+    "layers": 9
+   },
+   {
+    "bundle": "saved_model_L16_p0_p0_m7",
+    "measured_us": 228.0,
+    "bytes_to_npu": 90766,
+    "layers": 17
+   },
+   {
+    "bundle": "saved_model_L32_p0_p0_m7",
+    "measured_us": 330.4,
+    "bytes_to_npu": 179950,
+    "layers": 33
+   },
+   {
+    "bundle": "saved_model_L64_p0_p0_m7",
+    "measured_us": 537.8,
+    "bytes_to_npu": 358286,
+    "layers": 65
+   }
+  ]
+ }
+}
