@@ -116,14 +116,29 @@ class Cell:
         """Angle [rad] of the winding at s; phi0 = angle of the winding start."""
         return phi0 + 2 * np.pi * (self.r_of_s(s) - self.R_core) / self.pitch
 
-    def tabs(self, phi0_cath=np.pi / 2, phi0_an=np.pi / 2):
-        """Tab list with (kind, radius, s, theta, live). Radii are the teardown's;
-        the angle follows from the spiral and the winding start angle [E].
-        The 0.4 mm cathode tab lies inside the mandrel and is moved to the first
-        wrap (to be checked against Liu et al. 2025)."""
+    # Liu et al. (2025): "The four aluminum cathode tabs are welded to the metallic
+    # cathode disk at roughly 90 deg intervals." Which tab sits at which angle is
+    # not given; radius order is assumed [E]. Anode tab angles are not reported.
+    cath_tab_angles: tuple = (0.0, np.pi / 2, np.pi, 3 * np.pi / 2)
+
+    def _snap(self, r_rep, alpha, phi0):
+        """Radius nearest r_rep at which the winding passes angle alpha."""
+        n = np.round((r_rep - self.R_core) / self.pitch - (alpha - phi0) / (2 * np.pi))
+        r = self.R_core + self.pitch * ((alpha - phi0) / (2 * np.pi) % 1.0 + np.floor(n))
+        cands = r + self.pitch * np.array([-1, 0, 1])
+        cands = cands[cands > self.R_core]
+        return float(cands[np.argmin(np.abs(cands - r_rep))])
+
+    def tabs(self, phi0_cath=np.pi / 2, phi0_an=np.pi / 2, snap_angles=True):
+        """Tab list with (kind, radius, s, theta, live). Radii are the teardown's.
+        With snap_angles, each cathode tab is moved by less than half a wrap
+        (< 0.16 mm in radius) so that it sits at its 90-degree position. The
+        0.4 mm cathode tab lies inside the mandrel and is moved to the first wrap."""
         out = []
         for i, r in enumerate(self.cath_tab_r):
             rr = r if r > self.R_core else self.R_core + self.pitch
+            if snap_angles:
+                rr = self._snap(rr, self.cath_tab_angles[i], phi0_cath)
             s = float(self.s_of_r(rr))
             out.append(dict(kind="cathode", r=rr, r_reported=r, s=s,
                             theta=float(self.theta_of_s(s, phi0_cath) % (2 * np.pi)), live=True))
@@ -187,8 +202,29 @@ def _seg(z0, z1, n):
     return np.linspace(z0, z1, n + 1)
 
 
+def refine_faces(f, center, h, half, grade=1.3):
+    """Insert a block of spacing h over [center-half, center+half] into the face
+    array f, graded geometrically (ratio `grade`) back to the local spacing."""
+    f = np.asarray(f, float)
+    base = float(np.median(np.diff(f[(f > center - 4 * half) & (f < center + 4 * half)]))) \
+        if ((f > center - 4 * half) & (f < center + 4 * half)).sum() > 2 else float(np.median(np.diff(f)))
+    n = int(np.ceil(half / h))
+    core = center + h * np.arange(-n, n + 1)
+    right, x, st = [], core[-1], h
+    while st < base:
+        st *= grade; x += st; right.append(x)
+    left, x, st = [], core[0], h
+    while st < base:
+        st *= grade; x -= st; left.append(x)
+    lo, hi = (left[-1] if left else core[0]), (right[-1] if right else core[-1])
+    keep = f[(f < lo - 0.5 * base) | (f > hi + 0.5 * base)]
+    return np.unique(np.concatenate([keep, left[::-1], core, right]))
+
+
 def build_grid(cell: Cell | None = None, n_core=3, n_roll_r=40, n_th=48, n_roll_z=36,
-               n_gap_z=3, refine=1.0, tab_phi0=(np.pi / 2, np.pi / 2)) -> Grid:
+               n_gap_z=3, refine=1.0, tab_phi0=(np.pi / 2, np.pi / 2), patch=None) -> Grid:
+    """patch: optional local refinement dict(r0, th0, z0 [mm, rad, mm], h_inplane [mm],
+    half [mm], h_r [mm] or None, half_r [mm]) around a short."""
     """Structured grid. `refine` scales the roll's radial, angular and axial counts."""
     cell = cell or Cell()
     nr = max(4, int(round(n_roll_r * refine)))
@@ -205,6 +241,14 @@ def build_grid(cell: Cell | None = None, n_core=3, n_roll_r=40, n_th=48, n_roll_
         n = nz if name == "roll" else (n_gap_z if "gap" in name else 1)
         zs.append(_seg(z0, z1, n)[:-1])
     z_f = np.concatenate(zs + [[cell.H_can]])
+    if patch is not None:
+        P = patch
+        z_f = refine_faces(z_f, P["z0"], P["h_inplane"], P["half"])
+        th_f = refine_faces(th_f, P["th0"], P["h_inplane"] / P["r0"], P["half"] / P["r0"])
+        th_f = th_f[(th_f >= 0) & (th_f <= 2 * np.pi)]
+        th_f[0], th_f[-1] = 0.0, 2 * np.pi
+        if P.get("h_r"):
+            r_f = refine_faces(r_f, P["r0"], P["h_r"], P.get("half_r", 2.0))
     g = Grid(cell, r_f, th_f, z_f)
     _fill(g, tab_phi0)
     return g

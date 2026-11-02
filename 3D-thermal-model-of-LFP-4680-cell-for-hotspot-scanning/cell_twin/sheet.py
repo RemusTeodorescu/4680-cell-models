@@ -157,11 +157,15 @@ SHORT_TYPES = {
 class SheetCircuit:
     """phi_Al, phi_Cu on the sheet plus the positive terminal V (negative = 0)."""
 
-    def __init__(self, sh: Sheet, R_tab_al=0.30e-3, R_tab_ni=0.65e-3, short=None):
+    def __init__(self, sh: Sheet, R_tab_al=0.30e-3, R_tab_ni=0.65e-3, short=None, foil_gain=1.0):
+        """foil_gain multiplies both foils' sheet conductance: 1 = 10 um foils of the
+        teardown; > 1 = the effective value that makes the collection resistance
+        agree with the bench (see calibrate_foil_gain)."""
         self.sh = sh
         c = sh.c
-        self.L_al, self.e_al = sh.foil_laplacian(SIG_AL * c.t_al * 1e-6)
-        self.L_cu, self.e_cu = sh.foil_laplacian(SIG_CU * c.t_cu * 1e-6)
+        self.foil_gain = foil_gain
+        self.L_al, self.e_al = sh.foil_laplacian(foil_gain * SIG_AL * c.t_al * 1e-6)
+        self.L_cu, self.e_cu = sh.foil_laplacian(foil_gain * SIG_CU * c.t_cu * 1e-6)
         self.G_al, self.G_cu = [], []          # (nodes, conductances) per tab
         for t in sh.tabs:
             if t["kind"] == "cathode":
@@ -281,11 +285,12 @@ def tab_cells(g, c, tab, z_layout):
 
 
 # ============================================================ coupled run
-def coupled_run(I=2 * 15.41, t_end=600.0, dt=5.0, short=None, T_amb=298.15, refine=1.0, label="", asr=1.3e-3, h=22.4):
+def coupled_run(I=2 * 15.41, t_end=600.0, dt=5.0, short=None, T_amb=298.15, refine=1.0, label="", asr=1.3e-3, h=22.4,
+                local="thevenin", foil_gain=1.0, R_ext=0.0, n_s=16, n_z=2, soc0=0.8):
     c = Cell()
     g = build_grid(c, refine=refine)
     sh = Sheet(c, short_s=None if short is None else short["s"])
-    circ = SheetCircuit(sh, short=short)
+    circ = SheetCircuit(sh, short=short, foil_gain=foil_gain)
     Lz = {n: (a, b) for n, a, b in c.z_layout()}
     z0_cath = Lz["roll"][0] + (c.H_roll - c.H_cath) / 2
     M = sheet_to_grid(sh, g, z0_cath)
@@ -297,7 +302,15 @@ def coupled_run(I=2 * 15.41, t_end=600.0, dt=5.0, short=None, T_amb=298.15, refi
         w_short = box_source(g, 1.0, circ.short_r, th_s, z0_cath + short["z"],
                              d_r=short.get("d_r", 0.3), w_arc=short.get("w", 1.0), h_z=short.get("h", 1.0))
     q_areal = 15.41 * 3600 / sh.A.sum()
-    lm = TheveninLocal(sh.n, q_areal, asr=asr)
+    if local == "mt":
+        from mtlocal import MTColumnsLocal
+        lm = MTColumnsLocal(sh, n_s=n_s, n_z=n_z, soc0=soc0, T0=T_amb)
+        lm.dt = dt
+        R_ext = lm.R_ext
+    else:
+        lm = TheveninLocal(sh.n, q_areal, asr=asr, soc0=soc0)
+    side_wall = np.zeros(g.shape, bool); side_wall[-1] = True
+    side_wall = side_wall.ravel(); side_wall_w = g.volumes().ravel() * side_wall; side_wall_w /= side_wall_w.sum()
     K, C, Gb = assemble(g, BC(h, h, h))
     sol = Solver(K, C)
     masks = surface_masks(g)
@@ -311,7 +324,7 @@ def coupled_run(I=2 * 15.41, t_end=600.0, dt=5.0, short=None, T_amb=298.15, refi
         pa, pc, V, j = circ.solve(U, r, I)
         q_sheet, tab_q, q_short = circ.heat(pa, pc, U, r, V)
         q_sheet = q_sheet + lm.heat(j, Ts) * sh.A
-        q3 = M @ q_sheet
+        q3 = M @ q_sheet + I ** 2 * R_ext * side_wall_w
         if short is not None:
             q3 += q_short * w_short
         for tb, p in tab_q:
@@ -321,7 +334,7 @@ def coupled_run(I=2 * 15.41, t_end=600.0, dt=5.0, short=None, T_amb=298.15, refi
         lm.advance(j, Ts, dt)
         t += dt
         st = field_stats(g, T3, masks)
-        st.update(t=t, V=float(V), P_total=float(q3.sum()), P_short=float(q_short),
+        st.update(t=t, V=float(V - I * R_ext), V_sheet=float(V), P_total=float(q3.sum()), P_short=float(q_short),
                   j_min=float(j.min()), j_max=float(j.max()), j_mean=float((j * sh.A).sum() / sh.A.sum()),
                   tab_currents=[float((g_ * (pa[n_] - V)).sum()) for n_, g_, _ in circ.G_al] +
                                [float((g_ * pc[n_]).sum()) for n_, g_, _ in circ.G_cu])
@@ -332,6 +345,29 @@ def coupled_run(I=2 * 15.41, t_end=600.0, dt=5.0, short=None, T_amb=298.15, refi
     np.savez_compressed(OUT / f"coupled_{label}.npz", **snap)
     return dict(hist=hist, n_sheet=sh.n, n3d=g.n,
                 tabs=[dict(kind=t["kind"], r=t["r"], live=t["live"]) for t in sh.tabs])
+
+
+def collection_resistance(foil_gain=1.0, asr=0.1):
+    """Collector resistance (foils + tabs) for near-uniform current, ohm."""
+    c = Cell(); sh = Sheet(c); circ = SheetCircuit(sh, foil_gain=foil_gain)
+    pa, pc, V, j = circ.solve(np.full(sh.n, 3.3), np.full(sh.n, asr), 1.0)
+    return (3.3 - V) - asr / sh.A.sum()
+
+
+def calibrate_foil_gain(R_target):
+    """foil_gain such that the collection resistance equals R_target (secant)."""
+    g0, g1 = 1.0, 10.0
+    f0, f1 = collection_resistance(g0) - R_target, collection_resistance(g1) - R_target
+    for _ in range(8):
+        # R ~ a + b/g: secant in 1/g
+        x0, x1 = 1 / g0, 1 / g1
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        g2 = 1 / max(x2, 1e-3)
+        f2 = collection_resistance(g2) - R_target
+        g0, f0, g1, f1 = g1, f1, g2, f2
+        if abs(f2) < 0.01 * R_target:
+            break
+    return g1, f1 + R_target
 
 
 def foil_resistance_check():
