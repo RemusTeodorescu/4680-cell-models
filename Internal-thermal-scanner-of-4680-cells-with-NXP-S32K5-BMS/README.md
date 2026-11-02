@@ -63,10 +63,8 @@ The twin works with any eIQ Auto project you have; the two example input files h
 
 ## Credits
 
-- Board bring-up, eIQ Auto deployment and the board measurements used for calibration: Arnold Sequeira (AAU Energy).
-- PINN temperature estimator: Yusheng Zheng (AAU Energy).
-- Supervision: Remus Teodorescu, Arman Oshnoei.
-- NXP contacts: Wenzel Prochazka and colleagues.
+- Remus Teodorescu (AAU Energy), with Arnold Sequeira (AAU Energy; board bring-up, eIQ Auto deployment and the board measurements used for calibration) and Nicolai A. Weinreich (AAU Energy).
+- Supervision: Wenzel Prochazka (NXP Semiconductors Austria).
 
 ## Licence
 
