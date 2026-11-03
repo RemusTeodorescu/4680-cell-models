@@ -43,7 +43,7 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 .label { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--mute); margin: 0 0 8px; font-weight: 600; }
 .top { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; }
 @media (max-width: 980px) { .top { grid-template-columns: 1fr; } }
-#viewbox { position: relative; height: 640px; border-radius: 8px; overflow: hidden; background: var(--view-bg); }
+#viewbox { position: relative; height: 560px; border-radius: 8px; overflow: hidden; background: var(--view-bg); }
 @media (max-width: 700px) { #viewbox { height: 380px; } }
 #viewbox canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 .viewbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
@@ -74,7 +74,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .seg button { border: 0; border-radius: 0; background: transparent; padding: 6px 10px; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 /* detector */
-.det { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
+.det { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
 @media (max-width: 760px) { .det { grid-template-columns: 1fr; } }
 .verdict { display: flex; align-items: center; gap: 14px; }
 .lamp { width: 22px; height: 22px; border-radius: 50%; background: var(--ok); flex: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 22%, transparent); }
@@ -140,6 +140,23 @@ canvas.chart { width: 100%; height: 190px; display: block; }
         <span class="mono" id="lgmax">45 °C</span>
         <span>· red ring = soft short (truth) · red glow = detector alarm</span>
       </div>
+      <section class="det idle" id="det" aria-live="polite">
+        <div class="verdict">
+          <div class="lamp" aria-hidden="true"></div>
+          <div>
+            <div class="vtext" id="det-text">Short detector: not trained yet</div>
+            <div class="vsub" id="det-sub">The Physics AI NN reads only what the BMS sees: pack current, the 23 group voltages and the 2 NTCs (and, at cell level, a per-cell impedance temperature).</div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="sub">Detector inputs</span>
+          <div class="seg" role="group" aria-label="Detector level">
+            <button type="button" id="d-grp" aria-pressed="true">Group level</button>
+            <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
+          </div>
+          <button type="button" id="d-ack" title="Clear the latched alarm and let the detector learn a new baseline">Acknowledge &amp; re-arm</button>
+        </div>
+      </section>
     </section>
 
     <aside class="panel controls" aria-label="Controls">
@@ -218,23 +235,6 @@ canvas.chart { width: 100%; height: 190px; display: block; }
     </aside>
   </div>
 
-  <section class="panel det idle" id="det" aria-live="polite">
-    <div class="verdict">
-      <div class="lamp" aria-hidden="true"></div>
-      <div>
-        <div class="vtext" id="det-text">Short detector: not trained yet</div>
-        <div class="vsub" id="det-sub">The Physics AI NN reads only what the BMS sees: pack current, the 23 group voltages and the 2 NTCs (and, at cell level, a per-cell impedance temperature).</div>
-      </div>
-    </div>
-    <div class="row">
-      <span class="sub">Detector inputs</span>
-      <div class="seg" role="group" aria-label="Detector level">
-        <button type="button" id="d-grp" aria-pressed="true">Group level</button>
-        <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
-      </div>
-      <button type="button" id="d-ack" title="Clear the latched alarm and let the detector learn a new baseline">Acknowledge &amp; re-arm</button>
-    </div>
-  </section>
 
   <div class="tiles">
     <div class="tile ntc"><div class="k">NTC 1 (inlet)</div><div class="v" id="ntc1">–</div><div class="s">what the BMS sees</div></div>
@@ -866,9 +866,9 @@ canvas.chart { width: 100%; height: 190px; display: block; }
   }
   function detReadout() {
     const box2 = $("det");
-    if (!det) { box2.className = "panel det idle"; return; }
+    if (!det) { box2.className = "det idle"; return; }
     const v = det.verdict(detLevel);
-    box2.className = "panel det " + (v.alarm ? "alarm" : "ok");
+    box2.className = "det " + (v.alarm ? "alarm" : "ok");
     $("det-text").textContent = v.text; $("det-sub").textContent = v.sub;
   }
   function inspectText(k) {
