@@ -65,6 +65,10 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 .ctl label { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
 .ctl label span.mono { color: var(--mute); }
 .hint { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--mute); min-height: 4.1em; border-top: 1px solid var(--line); padding-top: 6px; }
+.desc { border-top: 1px solid var(--line); padding-top: 6px; font-size: 11.5px; line-height: 1.32; color: var(--mute); display: grid; gap: 6px; }
+.desc p { margin: 0; }
+@media (orientation: landscape) and (max-height: 860px) { .desc { display: none; } }
+.desc b { color: var(--ink); font-weight: 600; }
 .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .controls .ctl, .controls .row { min-width: 0; }
 .controls select { width: 100%; min-width: 0; }
@@ -275,6 +279,12 @@ details.about .note { margin: 6px 0 0; }
         <button type="button" id="clear">Clear all shorts</button>
         <span class="sub mono" id="tclock">t = 0 s</span>
       </div>
+      <div class="desc">
+        <p><b>Module:</b> 23 × 9p BYD 4680 LFP cells; each cell has OCV, R + RC, and core/can temperatures.</p>
+        <p><b>Short:</b> a resistance inside one cell; drains and heats it. Terminal signal by position from the 3-D sheet model; hotspot from the 3-D library.</p>
+        <p><b>Stage 1, GRU:</b> per group, an observer splits load voltage from a slow offset; a GRU on the NPU flags the group losing charge (every second).</p>
+        <p><b>Stage 2, EIS:</b> after a GRU alarm, the BMA7418 scans the group's 9 cells at 10 Hz and 1 kHz; the warmest (lowest ratio) is named.</p>
+      </div>
     </aside>
   </div>
 
@@ -296,7 +306,8 @@ details.about .note { margin: 6px 0 0; }
         <span><i style="background:var(--ntc)"></i>NTC 1 / NTC 2</span>
         <span><i style="background:var(--warn)"></i>hottest core</span>
         <span><i style="background:var(--ink)"></i>hottest surface</span>
-        <span><i style="background:#8e44ad"></i>hottest point inside (3-D)</span>
+        <span><i style="background:#8e44ad"></i>hottest point inside (3-D), right axis</span>
+        <span>dashed lines: alarm starts</span>
       </div>
     </section>
     <section class="panel chartpanel" id="p-volts">
@@ -757,7 +768,7 @@ details.about .note { margin: 6px 0 0; }
       x.fillStyle = "#1d2a24"; x.fillRect(0, 0, w, h);
       x.strokeStyle = "#3fb37f"; x.lineWidth = Math.max(4, h * 0.03); x.strokeRect(x.lineWidth, x.lineWidth, w - 2 * x.lineWidth, h - 2 * x.lineWidth);
       // NN symbol: 3-4-4-2 nodes with all connections
-      const nnW = h * 0.95, ox = w - nnW - h * 0.1, layers = [3, 4, 4, 2];
+      const nnW = h * 0.7, ox = w - nnW - h * 0.06, layers = [3, 4, 4, 2];
       const pts = layers.map((nl, li) => Array.from({ length: nl }, (_, i) => [ox + nnW * (0.1 + 0.8 * li / (layers.length - 1)), h * (0.15 + 0.7 * (i + 0.5) / nl)]));
       x.strokeStyle = "rgba(160, 230, 200, 0.55)"; x.lineWidth = Math.max(1.5, h * 0.008);
       for (let li = 0; li + 1 < pts.length; li++) for (const a of pts[li]) for (const b of pts[li + 1]) { x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); }
@@ -765,12 +776,14 @@ details.about .note { margin: 6px 0 0; }
       // text
       x.fillStyle = "#ffffff"; x.textAlign = "left"; x.textBaseline = "middle";
       const tx = h * 0.12;
-      x.font = `700 ${Math.round(h * 0.34)}px Arial, Helvetica, sans-serif`; x.fillText("NXP S32K5", tx, h * 0.27);
-      x.font = `700 ${Math.round(h * 0.24)}px Arial, Helvetica, sans-serif`; x.fillStyle = "#7fe0b5"; x.fillText("NPU BMS", tx, h * 0.58);
-      x.fillStyle = "#c9a8ff"; x.fillText("BMA7418 EIS", tx, h * 0.84);
+      const maxW = ox - tx - h * 0.08;
+      const fit = (txt, px) => { x.font = `700 ${px}px Arial, Helvetica, sans-serif`; const m = x.measureText(txt).width; if (m > maxW) x.font = `700 ${Math.floor(px * maxW / m)}px Arial, Helvetica, sans-serif`; };
+      fit("NXP S32K5", Math.round(h * 0.32)); x.fillText("NXP S32K5", tx, h * 0.24);
+      fit("NPU Sensorless Thermal Scanner", Math.round(h * 0.22)); x.fillStyle = "#7fe0b5"; x.fillText("NPU Sensorless Thermal Scanner", tx, h * 0.55);
+      fit("BMA7418 EIS SC Detection", Math.round(h * 0.22)); x.fillStyle = "#c9a8ff"; x.fillText("BMA7418 EIS SC Detection", tx, h * 0.82);
       const tex = new THREE.CanvasTexture(c); tex.anisotropy = 4; return tex;
     }
-    const bmsLen = Math.abs(zOut - zIn) + 60, bmsW = 110, bmsH = 100;
+    const bmsLen = Math.abs(zOut - zIn) + 60, bmsW = 150, bmsH = 130;
     const sideMat = new THREE.MeshStandardMaterial({ color: 0x26332d, roughness: 0.6, metalness: 0.2 });
     const bms = new THREE.Mesh(new THREE.BoxGeometry(bmsW, bmsH, bmsLen), sideMat);
     bms.position.set(xm - pipeL / 2, yPipe + 9 + bmsH / 2, (zIn + zOut) / 2);
@@ -1004,31 +1017,46 @@ details.about .note { margin: 6px 0 0; }
   }
   function drawTrend() {
     fitCanvas(tr);
-    const w = tr.width, h = tr.height, L = 78, R = 12, T = 12, B = 34;
+    const w = tr.width, h = tr.height, L = 70, R = 70, T = 14, B = 34;
     trx.clearRect(0, 0, w, h);
     if (hist.length < 2) return;
     const t0 = hist[0].t, t1 = hist[hist.length - 1].t;
-    let mn = Infinity, mx = -Infinity;
-    for (const p of hist) for (const v of [p.n1, p.n2, p.ms, p.mc, p.hp]) { if (!isFinite(v)) continue; mn = Math.min(mn, v); mx = Math.max(mx, v); }
+    // left axis: what the module shows (NTCs, hottest surface and core); right axis: hottest point inside a shorted cell
+    let mn = Infinity, mx = -Infinity, hmn = Infinity, hmx = -Infinity;
+    for (const p of hist) {
+      for (const v of [p.n1, p.n2, p.ms, p.mc]) { if (isFinite(v)) { mn = Math.min(mn, v); mx = Math.max(mx, v); } }
+      if (isFinite(p.hp)) { hmn = Math.min(hmn, p.hp); hmx = Math.max(hmx, p.hp); }
+    }
     mn = Math.floor(mn - 0.5); mx = Math.max(mn + 3, Math.ceil(mx + 0.5));
-    const X = tt => L + (w - L - R) * (tt - t0) / Math.max(1, t1 - t0), Y = v => T + (h - T - B) * (1 - (v - mn) / (mx - mn));
-    trx.strokeStyle = css("--line"); trx.lineWidth = 1; trx.fillStyle = css("--mute");
-    trx.font = `20px ${css("--font-data")}`; trx.textAlign = "right"; trx.textBaseline = "middle";
-    for (let i = 0; i <= 4; i++) { const v = mn + (mx - mn) * i / 4, y = Y(v); trx.beginPath(); trx.moveTo(L, y); trx.lineTo(w - R, y); trx.stroke(); trx.fillText(v.toFixed(v >= 100 ? 0 : 1), L - 6, y); }
-    trx.textAlign = "center"; trx.textBaseline = "top";
+    const hasHp = isFinite(hmx);
+    if (hasHp) { hmn = Math.min(mn, Math.floor(hmn / 10) * 10); hmx = Math.max(hmn + 10, Math.ceil(hmx / 10) * 10); }
+    const X = tt => L + (w - L - R) * (tt - t0) / Math.max(1, t1 - t0);
+    const Y = v => T + (h - T - B) * (1 - (v - mn) / (mx - mn)), Yh = v => T + (h - T - B) * (1 - (v - hmn) / (hmx - hmn));
+    trx.strokeStyle = css("--line"); trx.lineWidth = 1; trx.font = `20px ${css("--font-data")}`; trx.textBaseline = "middle";
+    for (let i = 0; i <= 4; i++) {
+      const y = T + (h - T - B) * i / 4;
+      trx.beginPath(); trx.moveTo(L, y); trx.lineTo(w - R, y); trx.stroke();
+      trx.fillStyle = css("--mute"); trx.textAlign = "right"; trx.fillText((mx - (mx - mn) * i / 4).toFixed(1), L - 6, y);
+      if (hasHp) { trx.fillStyle = "#8e44ad"; trx.textAlign = "left"; trx.fillText((hmx - (hmx - hmn) * i / 4).toFixed(0), w - R + 6, y); }
+    }
+    trx.fillStyle = css("--mute"); trx.textAlign = "center"; trx.textBaseline = "top";
     for (let i = 0; i <= 4; i++) { const tt = t0 + (t1 - t0) * i / 4; trx.fillText(fmtT(tt), X(tt), h - B + 8); }
-    // alarm bands
-    trx.fillStyle = css("--warn"); trx.globalAlpha = 0.12;
-    for (const p of hist) if (p.al) trx.fillRect(X(p.t) - 2, T, 4, h - T - B);
-    trx.fillStyle = css("--eis");
-    for (const p of hist) if (p.ae) trx.fillRect(X(p.t) - 2, T + (h - T - B) / 2, 4, (h - T - B) / 2);
-    trx.globalAlpha = 1;
-    const line = (key, c, wdt, dash) => {
+    // alarm markers: one dashed line where each alarm starts
+    const marks = [["al", css("--warn"), "GRU"], ["ae", css("--eis"), "EIS"]];
+    for (const [key, c, lab] of marks) {
+      for (let i = 1; i < hist.length; i++) if (hist[i][key] && !hist[i - 1][key]) {
+        const x = X(hist[i].t);
+        trx.strokeStyle = c; trx.lineWidth = 2; trx.setLineDash([6, 5]); trx.beginPath(); trx.moveTo(x, T); trx.lineTo(x, h - B); trx.stroke(); trx.setLineDash([]);
+        trx.fillStyle = c; trx.textAlign = "left"; trx.textBaseline = "top"; trx.fillText(lab, x + 4, T + (lab === "EIS" ? 24 : 2));
+      }
+    }
+    const line = (key, c, wdt, dash, Yf) => {
       trx.strokeStyle = c; trx.lineWidth = wdt; trx.setLineDash(dash || []); trx.beginPath(); let pen = false;
-      hist.forEach(p => { const v = p[key]; if (!isFinite(v)) { pen = false; return; } pen ? trx.lineTo(X(p.t), Y(v)) : trx.moveTo(X(p.t), Y(v)); pen = true; });
+      hist.forEach(p => { const v = p[key]; if (!isFinite(v)) { pen = false; return; } pen ? trx.lineTo(X(p.t), Yf(v)) : trx.moveTo(X(p.t), Yf(v)); pen = true; });
       trx.stroke(); trx.setLineDash([]);
     };
-    line("hp", "#8e44ad", 2.5); line("mc", css("--warn"), 2.5); line("ms", css("--ink"), 2); line("n1", css("--ntc"), 2.5); line("n2", css("--ntc"), 2.5, [8, 6]);
+    if (hasHp) line("hp", "#8e44ad", 2.5, [3, 4], Yh);
+    line("mc", css("--warn"), 2.5, null, Y); line("ms", css("--ink"), 2, null, Y); line("n1", css("--ntc"), 2.5, null, Y); line("n2", css("--ntc"), 2.5, [8, 6], Y);
   }
   const vc = $("volts"), vcx = vc.getContext("2d");
   function drawVolts() {
