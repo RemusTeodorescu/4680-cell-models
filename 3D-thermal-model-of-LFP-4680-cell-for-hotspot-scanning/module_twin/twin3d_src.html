@@ -60,6 +60,10 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 .ctl { display: grid; gap: 4px; }
 .ctl label { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
 .ctl label span.mono { color: var(--mute); }
+.hint { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--mute); }
+.controls .ctl, .controls .row { min-width: 0; }
+.controls select { width: 100%; min-width: 0; }
+.controls { overflow-x: hidden; }
 input[type=range] { width: 100%; accent-color: var(--accent); }
 select, button { font: 13px var(--font-ui); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; }
 select { max-width: 100%; }
@@ -204,15 +208,15 @@ details.about .note { margin: 6px 0 0; }
       <div class="ctl">
         <label for="load">Load profile</label>
         <select id="load">
-          <option value="const">Constant discharge</option>
-          <option value="drive" selected>Drive cycle (synthetic)</option>
+          <option value="const" selected>Constant discharge</option>
+          <option value="drive">Drive cycle (synthetic)</option>
           <option value="pulse">10 s pulses, 10 s rest</option>
           <option value="rest">Rest (no current)</option>
         </select>
       </div>
       <div class="ctl">
         <label for="crate">C-rate (peak) <span class="mono" id="crate-v"></span></label>
-        <input type="range" id="crate" min="0" max="3" step="0.1" value="2">
+        <input type="range" id="crate" min="0" max="3" step="0.1" value="1">
       </div>
       <div class="ctl">
         <label for="tin">Coolant inlet <span class="mono" id="tin-v"></span></label>
@@ -222,9 +226,9 @@ details.about .note { margin: 6px 0 0; }
         <label for="flow">Coolant flow <span class="mono" id="flow-v"></span></label>
         <input type="range" id="flow" min="0.5" max="12" step="0.5" value="4">
       </div>
-      <p class="label" style="margin:4px 0 0">Next short (click a cell)</p>
+      <p class="label" style="margin:4px 0 0">Next short: set it here, then click a cell</p>
       <div class="ctl">
-        <label for="risc">Resistance</label>
+        <label for="risc">Short resistance</label>
         <select id="risc">
           <option value="1">1 Ω (≈ 11 W, beyond soft-short scope)</option>
           <option value="3">3 Ω (≈ 3.6 W)</option>
@@ -233,30 +237,37 @@ details.about .note { margin: 6px 0 0; }
           <option value="100">100 Ω (≈ 0.11 W)</option>
           <option value="1000">1 kΩ (≈ 11 mW)</option>
         </select>
+        <p class="hint" id="h-risc"></p>
       </div>
       <div class="ctl">
-        <label for="sloc">Radius in the cell</label>
-        <select id="sloc"><option value="0">r = 4 mm (core)</option><option value="1">r = 8 mm</option><option value="2" selected>r = 12 mm</option><option value="3">r = 16 mm</option><option value="4">r = 20 mm</option><option value="5">r = 22.2 mm (outer wrap)</option></select>
+        <label for="sloc">Depth in the jelly roll (radius)</label>
+        <select id="sloc"><option value="0">r = 4 mm: innermost wraps, next to the core</option><option value="1">r = 8 mm</option><option value="2" selected>r = 12 mm: middle of the roll</option><option value="3">r = 16 mm</option><option value="4">r = 20 mm</option><option value="5">r = 22.2 mm: outermost wrap, under the can</option></select>
+        <p class="hint" id="h-sloc"></p>
       </div>
       <div class="ctl">
-        <label for="shgt">Height in the cell</label>
-        <select id="shgt"><option value="base_end">near the base end</option><option value="lower">lower quarter</option><option value="mid" selected>mid-height</option><option value="upper">upper quarter</option><option value="cap_end">near the cap end</option></select>
+        <label for="shgt">Position along the cell height</label>
+        <select id="shgt"><option value="base_end">near the base (negative end)</option><option value="lower">lower quarter</option><option value="mid" selected>middle</option><option value="upper">upper quarter</option><option value="cap_end">near the cap (positive end)</option></select>
+        <p class="hint" id="h-shgt"></p>
       </div>
       <div class="ctl">
-        <label for="stype">Short type</label>
-        <select id="stype"><option>anode–cathode</option><option selected>Al–anode</option><option>Cu–cathode</option><option>Al–Cu</option></select>
+        <label for="stype">Which layers touch (short type)</label>
+        <select id="stype"><option value="anode–cathode">anode coating to cathode coating</option><option value="Al–anode" selected>aluminium foil to anode coating</option><option value="Cu–cathode">copper foil to cathode coating</option><option value="Al–Cu">aluminium foil to copper foil</option></select>
+        <p class="hint" id="h-stype"></p>
       </div>
       <div class="ctl">
-        <label for="sfoot">Footprint</label>
+        <label for="sfoot">Size of the contact spot</label>
         <select id="sfoot"><option value="0.25">0.25 × 0.25 mm</option><option value="0.5">0.5 × 0.5 mm</option><option value="1.0" selected>1 × 1 mm</option><option value="2.0">2 × 2 mm</option><option value="4.0">4 × 4 mm</option></select>
+        <p class="hint" id="h-sfoot"></p>
       </div>
       <div class="ctl">
-        <label for="scase">Current collection (sets the electrical fingerprint)</label>
-        <select id="scase"><option value="B" selected>foils calibrated to the bench (B)</option><option value="A">literal teardown foils (A)</option></select>
+        <label for="scase">Current path to the tabs</label>
+        <select id="scase"><option value="B" selected>calibrated to the bench measurements</option><option value="A">teardown geometry as drawn (worst case)</option></select>
+        <p class="hint" id="h-scase"></p>
       </div>
       <div class="ctl">
-        <label for="sdur">Duration</label>
-        <select id="sdur"><option value="1">1 s (flash)</option><option value="10">10 s</option><option value="60">60 s</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select>
+        <label for="sdur">How long the short lasts</label>
+        <select id="sdur"><option value="1">1 s (a flash)</option><option value="10">10 s</option><option value="60">1 min</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select>
+        <p class="hint" id="h-sdur"></p>
       </div>
       <div class="row">
         <button type="button" id="clear">Clear all shorts</button>
@@ -840,6 +851,37 @@ details.about .note { margin: 6px 0 0; }
   }
 
   // ---------------- controls
+  const HINTS = {
+    risc: { _: "Resistance of the contact between the two electrodes. Lower resistance means more current and more heat. Soft shorts are about 1 Ω to 1 kΩ.",
+      "1": "11 W: a hard short. The twin does not model what follows (escalation), so treat it as out of scope.",
+      "3": "3.6 W: easy to detect, in minutes.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
+      "30": "0.36 W: below the detection limit within 2 h with group voltages alone.",
+      "100": "0.11 W: a slow leak, not detectable within 2 h.", "1000": "11 mW: a very slow leak, not detectable." },
+    sloc: { _: "How deep inside the wound electrode the short sits.",
+      "0": "Deep inside: the heat stays in the core and the can barely warms. Hottest inside.",
+      "2": "Middle of the roll: typical case.",
+      "5": "Just under the can: the outside warms most here, so it is the easiest to see thermally." },
+    shgt: { _: "Where along the 80 mm height. Near the ends the heat also flows into the tabs and the collector disks." },
+    stype: { _: "Which two layers of the electrode stack come into contact.",
+      "anode–cathode": "The separator is breached and the two coatings touch. The most common case; usually 1 Ω to 1 kΩ.",
+      "Al–anode": "The cathode coating is damaged and the aluminium foil touches the anode. The most dangerous type; usually 0.1 to 10 Ω.",
+      "Cu–cathode": "The copper foil touches the cathode coating. Limited by the resistive LFP coating; usually 10 Ω to 10 kΩ.",
+      "Al–Cu": "Foil to foil, for example a metal particle through both coatings; usually 0.01 to 1 Ω." },
+    sfoot: { _: "The same power in a smaller spot makes the hottest point inside hotter. It does not change what the BMS measures." },
+    scase: { _: "How much of the short the cell terminals see, which sets the voltage signal the detector works with.",
+      "B": "The foils are tuned so the cell matches the bench resistance. The terminals see 75-89 % of the short's signal wherever it is.",
+      "A": "The 4 cathode and 2 anode tabs exactly as in the teardown. A short far from a tab shows only 7 % of its signal at the terminals. Use this for the hardest case." },
+    sdur: { _: "A permanent short, or one that opens again after this time, for example a dendrite that burns through.",
+      "1e9": "Stays until you clear it." },
+  };
+  function hints() {
+    for (const id of Object.keys(HINTS)) {
+      const el = $("h-" + id); if (!el) continue;
+      const v = $(id).value, H = HINTS[id];
+      el.textContent = H[v] ? `${H._} ${H[v]}` : H._;
+    }
+  }
+  Object.keys(HINTS).forEach(id => $(id).addEventListener("change", hints));
   function labels() {
     $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C (${(+ui.crate.value * P.Q_Ah).toFixed(0)} A/cell)`;
     $("tin-v").textContent = `${ui.tin.value} °C`; $("flow-v").textContent = `${(+ui.flow.value).toFixed(1)} L/min`;
@@ -900,7 +942,7 @@ details.about .note { margin: 6px 0 0; }
   window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts), Tc: Array.from(Tc), Timp: Array.from(Timp1), cellp: det ? det.cellp() : null }) };
 
   // ---------------- loop
-  reset(); labels();
+  reset(); labels(); hints();
   const DT = 1.0;
   let last = performance.now(), acc = 0, lastHist = -1e9;
   function record() {
@@ -909,8 +951,7 @@ details.about .note { margin: 6px 0 0; }
     if (hist.length > 900) hist.shift();
   }
   for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (t - lastHist >= 5) { record(); lastHist = t; } }
-  // example start: a 3 ohm short in group 12, row 5
-  addShort(11 * NP + 4, 3);
+  // the module starts healthy: no short until the user clicks a cell
   function frame(now) {
     const realDt = Math.min(0.1, (now - last) / 1000); last = now;
     if (running) {
