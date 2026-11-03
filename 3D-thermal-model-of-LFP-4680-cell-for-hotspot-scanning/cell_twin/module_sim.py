@@ -181,7 +181,7 @@ def short_on(sc, ti):
 
 
 # ------------------------------------------------------------------ simulation
-def simulate(sc, rng, record_every=1, timp_every=10):
+def simulate(sc, rng, record_every=1, timp_every=10, keep_groups=None):
     """Run the batch. Returns measurements at 1/(record_every*dt) Hz and the truth."""
     B, nt = sc["I"].shape
     dt = sc["dt"]
@@ -206,6 +206,7 @@ def simulate(sc, rng, record_every=1, timp_every=10):
     nrec = nt // record_every
     Vg_rec = np.zeros((B, nrec, NS)); I_rec = np.zeros((B, nrec)); ntc_rec = np.zeros((B, nrec, 2))
     timp_rec = np.zeros((B, nrec // timp_every, N), np.float32); acc_T = np.zeros((B, N)); isc_rec = np.zeros((B, nrec)); Psc_rec = np.zeros((B, nrec))
+    timp1 = np.zeros((B, nrec, keep_groups.shape[1], NP), np.float16) if keep_groups is not None else None
     acc_V = np.zeros((B, NS)); acc_I = np.zeros(B); acc_isc = np.zeros(B); acc_P = np.zeros(B)
     for n in range(nt):
         ti = sc["t"][n]
@@ -248,11 +249,16 @@ def simulate(sc, rng, record_every=1, timp_every=10):
             isc_rec[:, m] = acc_isc / record_every; Psc_rec[:, m] = acc_P / record_every
             ntc_rec[:, m, 0] = Ts[:, NTC1] + 0.05 * rng.standard_normal(B)
             ntc_rec[:, m, 1] = Ts[:, NTC2] + 0.05 * rng.standard_normal(B)
-            acc_T += 0.5 * (Tc + Ts) + sc["imp_bias"] + P.get("imp_noise", 0.5) * rng.standard_normal((B, N))
+            tnow = 0.5 * (Tc + Ts) + sc["imp_bias"] + P.get("imp_noise", 0.5) * rng.standard_normal((B, N))
+            acc_T += tnow
+            if keep_groups is not None:
+                for j in range(keep_groups.shape[1]):
+                    for c in range(NP):
+                        timp1[:, m, j, c] = tnow[np.arange(B), keep_groups[:, j] * NP + c]
             if (m + 1) % timp_every == 0 and (m + 1) // timp_every - 1 < timp_rec.shape[1]:
                 timp_rec[:, (m + 1) // timp_every - 1] = acc_T / timp_every; acc_T[:] = 0
             acc_V[:] = 0; acc_I[:] = 0; acc_isc[:] = 0; acc_P[:] = 0
-    return dict(Vg=Vg_rec, I=I_rec, ntc=ntc_rec, timp=timp_rec, isc=isc_rec, Psc=Psc_rec,
+    return dict(Vg=Vg_rec, I=I_rec, ntc=ntc_rec, timp=timp_rec, isc=isc_rec, Psc=Psc_rec, timp1=timp1,
                 t=(np.arange(nrec) + 1) * record_every * dt)
 
 

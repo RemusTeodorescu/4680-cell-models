@@ -505,6 +505,50 @@ details.about .note { margin: 6px 0 0; }
     const coolMat = new THREE.MeshStandardMaterial({ color: 0x2f7fc4, roughness: 0.5, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
     const man = new THREE.Mesh(new THREE.BoxGeometry(14, 64, Hm + D), coolMat);
     man.position.set(-X0 - D / 2 - 14, 40, 0); scene.add(man);
+    // ---- inlet / outlet pipes and the BMS box mounted on them, beside the manifold
+    const xm = -X0 - D / 2 - 21, pipeL = 120, yPipe = 40;
+    const zIn = cy[NTC1] - Z0, zOut = cy[NTC2] - Z0;
+    const pipeGeo = new THREE.CylinderGeometry(9, 9, pipeL, 24); pipeGeo.rotateZ(Math.PI / 2);
+    const inMat = new THREE.MeshStandardMaterial({ color: 0x2f7fc4, roughness: 0.4, metalness: 0.3 });
+    const outMat = new THREE.MeshStandardMaterial({ color: 0xd0643a, roughness: 0.4, metalness: 0.3 });
+    const pIn = new THREE.Mesh(pipeGeo, inMat); pIn.position.set(xm - pipeL / 2, yPipe, zIn); clutter.add(pIn);
+    const pOut = new THREE.Mesh(pipeGeo, outMat); pOut.position.set(xm - pipeL / 2, yPipe, zOut); clutter.add(pOut);
+    function bmsLabel(w, h, top) {
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const x = c.getContext("2d");
+      x.fillStyle = "#1d2a24"; x.fillRect(0, 0, w, h);
+      x.strokeStyle = "#3fb37f"; x.lineWidth = Math.max(4, h * 0.03); x.strokeRect(x.lineWidth, x.lineWidth, w - 2 * x.lineWidth, h - 2 * x.lineWidth);
+      // NN symbol: 3-4-4-2 nodes with all connections
+      const nnW = h * 0.95, ox = w - nnW - h * 0.1, layers = [3, 4, 4, 2];
+      const pts = layers.map((nl, li) => Array.from({ length: nl }, (_, i) => [ox + nnW * (0.1 + 0.8 * li / (layers.length - 1)), h * (0.15 + 0.7 * (i + 0.5) / nl)]));
+      x.strokeStyle = "rgba(160, 230, 200, 0.55)"; x.lineWidth = Math.max(1.5, h * 0.008);
+      for (let li = 0; li + 1 < pts.length; li++) for (const a of pts[li]) for (const b of pts[li + 1]) { x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); }
+      for (const L of pts) for (const q of L) { x.beginPath(); x.arc(q[0], q[1], h * 0.045, 0, 2 * Math.PI); x.fillStyle = "#7fe0b5"; x.fill(); }
+      // text
+      x.fillStyle = "#ffffff"; x.textAlign = "left"; x.textBaseline = "middle";
+      const tx = h * 0.12;
+      x.font = `700 ${Math.round(h * 0.40)}px Arial, Helvetica, sans-serif`; x.fillText("NXP S32K5", tx, h * 0.33);
+      x.font = `700 ${Math.round(h * 0.30)}px Arial, Helvetica, sans-serif`; x.fillStyle = "#7fe0b5"; x.fillText("NPU BMS", tx, h * 0.72);
+      const tex = new THREE.CanvasTexture(c); tex.anisotropy = 4; return tex;
+    }
+    const bmsLen = Math.abs(zOut - zIn) + 60, bmsW = 110, bmsH = 100;
+    const sideMat = new THREE.MeshStandardMaterial({ color: 0x26332d, roughness: 0.6, metalness: 0.2 });
+    const bms = new THREE.Mesh(new THREE.BoxGeometry(bmsW, bmsH, bmsLen), sideMat);
+    bms.position.set(xm - pipeL / 2, yPipe + 9 + bmsH / 2, (zIn + zOut) / 2);
+    clutter.add(bms);
+    // label panels, text along the box: one on the outer side (facing -x), one on the top
+    const sideGeo = new THREE.PlaneGeometry(bmsLen - 8, bmsH - 8); sideGeo.rotateY(-Math.PI / 2);
+    const side = new THREE.Mesh(sideGeo, new THREE.MeshBasicMaterial({ map: bmsLabel(1600, Math.round(1600 * (bmsH - 8) / (bmsLen - 8))) }));
+    side.position.set(bms.position.x - bmsW / 2 - 0.6, bms.position.y, bms.position.z); clutter.add(side);
+    const topGeo = new THREE.PlaneGeometry(bmsLen - 8, bmsW - 8); topGeo.rotateX(-Math.PI / 2); topGeo.rotateY(-Math.PI / 2);
+    const top = new THREE.Mesh(topGeo, new THREE.MeshBasicMaterial({ map: bmsLabel(1600, Math.round(1600 * (bmsW - 8) / (bmsLen - 8))) }));
+    top.position.set(bms.position.x, bms.position.y + bmsH / 2 + 0.6, bms.position.z); clutter.add(top);
+    // status lamp: green, red while the detector alarms
+    const lampMat = new THREE.MeshBasicMaterial({ color: 0x2ecc71 });
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(7, 16, 12), lampMat);
+    lamp.position.set(bms.position.x, bms.position.y + bmsH / 2 + 6, bms.position.z + bmsLen / 2 - 18);
+    clutter.add(lamp);
+    for (const [txt, z] of [["in", zIn], ["out", zOut]]) { const sp = label(txt, 14); sp.position.set(xm - pipeL - 14, yPipe, z); clutter.add(sp); }
     // ribbons: vertical serpentine walls between rows
     for (let r = 0; r < NR; r++) {
       const list = ribCells[r].slice().sort((a, b) => cx[a] - cx[b]);
@@ -602,7 +646,7 @@ details.about .note { margin: 6px 0 0; }
       tween = now => { const u = Math.min(1, (now - s) / ms), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
         camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, target, e); if (u >= 1) tween = null; };
     }
-    const ISO = () => [new THREE.Vector3(-300, 620, 800), new THREE.Vector3(0, 10, 30)];
+    const ISO = () => [new THREE.Vector3(-1250, 760, 900), new THREE.Vector3(-260, 0, 10)];
     const TOP = () => [new THREE.Vector3(0, 1350, 1), new THREE.Vector3(0, 0, 0)];
     camera.position.copy(ISO()[0]); controls.target.copy(ISO()[1]);
     let spin = false;
@@ -629,7 +673,7 @@ details.about .note { margin: 6px 0 0; }
         goTo(c.clone().add(new THREE.Vector3(-210, 120, 210)), c);
       } else { const [p, tg] = ISO(); goTo(p, tg); }
     }
-    return { renderer, scene, camera, controls, cells, col, rings, ringGeo, ringMat, halos, pins, M, px, pz, insp, fieldCv, fieldTex, fieldCv2, fieldTex2, dot,
+    return { renderer, scene, camera, controls, cells, col, rings, ringGeo, ringMat, halos, pins, lampMat, M, px, pz, insp, fieldCv, fieldTex, fieldCv2, fieldTex2, dot,
              RC, RO, get inspK() { return inspK; }, setInspect, pickAt, goTo, ISO, TOP,
              get tween() { return tween; }, set spin(v) { spin = v; }, get spin() { return spin; } };
   }
@@ -683,6 +727,7 @@ details.about .note { margin: 6px 0 0; }
     flagged.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.halos.setMatrixAt(n, gl.M); });
     gl.halos.instanceMatrix.needsUpdate = true;
     gl.halos.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(now / 160));
+    gl.lampMat.color.setHex(flagged.length ? ((Math.floor(now / 300) % 2) ? 0xff2a1a : 0x7a1208) : 0x2ecc71);
     // one pin per flagged group (group level) or per flagged cell (cell level), bobbing above it
     const pinCells = detLevel === "cell" ? flagged : (det ? det.flaggedGroups().map(g => g * NP + 4) : []);
     gl.pins.count = pinCells.length;
@@ -852,7 +897,7 @@ details.about .note { margin: 6px 0 0; }
   }
 
   $("note").innerHTML = SIM.note;
-  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts) }) };
+  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts), Tc: Array.from(Tc), Timp: Array.from(Timp1), cellp: det ? det.cellp() : null }) };
 
   // ---------------- loop
   reset(); labels();
