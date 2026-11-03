@@ -22,6 +22,10 @@
 | `run_mt.py` | Coupled sheet + MT-TDFN + 3-D runs at 2C, with and without a short |
 | `patch_study.py` | Locally refined patch at the short: convergence, footprint, 1 s and 10 s pulses |
 | `library.py` | Unit-short response library (6 radii × 5 heights + tab angle), used by the module twin |
+| `fingerprint.py` | Electrical fingerprint of a short by position: two-port impedances Z_th, Z_tr of the electrode sheet, DC to 1 kHz |
+| `module_sim.py` | Fast 23s9p module simulator (batched); the same equations run in the browser twin |
+| `gen_data.py` | Training, validation and test scenarios for the short detector |
+| `train_det.py` | Physics AI NN, stage 1: observer + GRU, data + physics loss (JAX); evaluation and export to the twin |
 | `figs.py`, `figs2.py` | Figures from `out/` |
 | `fig_byd_exploded.py`, `fig_module_23s9p.py` | Drawings |
 
@@ -44,7 +48,14 @@ The reference results are in `cell_twin/out/`.
 
 **Local model:** `sheet.py` has a Thévenin placeholder (LFP-like OCV with an area-specific resistance). `mtlocal.py` replaces it by the multi-timescale thermal DFN model of the companion paper (MT-TDFN) through the same three calls: `linearize`, `advance`, `heat`. The MT-TDFN code is released with paper 1.1; set `MTTDFN_DIR` to it. Its particle populations and hysteresis are switched off in these runs.
 
-### 2. Module twin (`module_twin/module_twin.html`)
+### 2. Module twins
+
+**3-D module twin with the short detector** (`module_twin/module_twin_3d.html`, [open in the browser](https://htmlpreview.github.io/?https://github.com/RemusTeodorescu/4680-cell-models/blob/paper-1.2-3d-thermal-model/3D-thermal-model-of-LFP-4680-cell-for-hotspot-scanning/module_twin/module_twin_3d.html)).
+- The 23s9p module in 3-D: drag to rotate, click a cell to place a soft short, click a shorted cell to open it.
+- The trained Physics AI NN watches only the BMS signals (group voltages, current; at cell level, a per-cell impedance temperature) and raises a red alarm on the group or cell it suspects.
+- Rebuild with `python build_twin3d.py` after retraining (`train_det.py export`).
+
+**2-D module twin** (`module_twin/module_twin.html`)
 
 A 23s9p module of 207 cells, about a quarter of a 92s9p 4680 pack, with 2 NTCs at the coolant inlet and outlet. Each cell is drawn in the colour of its surface temperature.
 
@@ -81,6 +92,8 @@ All values below are from the model, not measurements.
   - It is set by the footprint of the short: 57 K/W for 0.25 mm and 12 K/W for 4 mm, at 60 s.
   - The can signal is the same for every footprint.
   - A 1 s pulse already reaches 90 % of the 60 s peak.
+- **Electrical fingerprint.** The share of a short seen at the terminals is 7–81 % of the cell resistance with the literal foils and 75–89 % with calibrated foils. It depends on the position along the electrode (highest at the tabs), hardly on height or side.
+- **Stage-1 detector (1 Hz, group voltages).** Permanent shorts: 100 % found at 0.3–1 Ω (median 7 min), 94 % at 1–3 Ω (13 min), 50 % at 3–10 Ω (30 min), none above 10 Ω within 2 h. 0.015 false alarms per module-hour. When found, the per-cell impedance temperature picks the right cell in 78–100 % of cases.
 - **Response library.**
   - On the can side, the rise after 600 s is 1.2–2 K/W for shorts at r ≤ 16 mm and 12–15 K/W in the outer wrap.
   - Only shorts in the last few wraps are thermally visible from outside.
@@ -90,13 +103,16 @@ All values below are from the model, not measurements.
 ![MT-TDFN coupled to the 3-D grid](figures/fig_mt_coupled.png)
 ![Refined patch at the short](figures/fig_patch_study.png)
 ![Response library](figures/fig_response_library.png)
+![Electrical fingerprint](figures/fig_fingerprint.png)
+![Detector](figures/fig_detector.png)
 
 ## Next
 
 1. Tab contacts and foil path checked against the teardown (case A vs B).
 2. Particle populations and hysteresis in the MT-TDFN columns; heat compared with the bench.
 3. A GPU solver.
-4. Training data for the Physics AI NN (physics-informed neural network) from the module twin and the library, including transient shorts.
+4. Stage 2: a 1 kHz impedance scan of the suspect cell (1-D CNN on the fingerprint spectra).
+5. Longer scenarios for shorts above 10 Ω, and a lower false-alarm rate.
 
 ## Credits and licence
 

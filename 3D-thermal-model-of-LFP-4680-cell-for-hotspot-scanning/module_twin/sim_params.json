@@ -1,0 +1,23 @@
+{
+ "P": {
+  "Q_Ah": 15.4,
+  "R0": 0.006,
+  "R1": 0.003,
+  "tau1": 30.0,
+  "Ea_R": 3600.0,
+  "sd_cap": 0.01,
+  "sd_res": 0.03,
+  "C_core": 250,
+  "C_can": 31,
+  "R_cs": 0.49,
+  "G_rib": 1.0,
+  "G_nb": 0.02,
+  "cp_cool": 3500,
+  "V_nom": 3.3,
+  "v_noise": 0.0003,
+  "v_lsb": 0.0001,
+  "imp_noise": 0.5,
+  "ntc_noise": 0.05
+ },
+ "note": "<b>What this is.</b> A reference 23s9p module (one of four in a Tesla Model Y 4680 pack) filled with BYD FC4680 LFP cells. Each cell has an OCV, a series resistance and one RC branch (cell-to-cell spread 1 % in capacity, 3 % in resistance), and two thermal nodes (core and can) cooled by serpentine ribbons. The 9 cells of a group are solved in parallel, so a short drains its whole group. The group voltages are shown as a cell monitor would measure them (0.3 mV noise, 0.1 mV resolution, 1 Hz); at cell level, an impedance-based temperature per cell (0.5 K noise at 1 Hz, 1 K calibration bias, averaged over 10 s). <b>Inside a shorted cell</b>, the hottest point comes from the 3-D cell twin of paper 1.2: the short's power history convolved with the unit response of its library, scaled for the footprint. The cut-open view shows that peak on an illustrative field shape. <b>The detector</b> (Physics AI NN) sees only the BMS signals. <b>Not modelled:</b> escalation of a short; shorts above 4 W are flagged as beyond soft-short scope. Ribbon conductance is an estimate."
+}

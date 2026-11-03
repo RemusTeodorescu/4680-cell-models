@@ -2,3 +2,5 @@ numpy>=1.26
 scipy>=1.11
 pyamg>=5.0
 matplotlib>=3.8
+jax>=0.4      # detector training only (train_det.py)
+optax>=0.2

@@ -1,0 +1,840 @@
+<title>23s9p Module Twin 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+/* An instrument panel: the 3-D module first and widest, controls beside it, the detector verdict right under it, traces below. */
+:root {
+  --bg: #f3f4f2; --panel: #ffffff; --ink: #1c2126; --mute: #5b6570; --line: #d9ddd8;
+  --accent: #1f6fb2; --warn: #c0392b; --ntc: #cf6a2b; --ok: #2e8b62; --housing: #e9ebe7;
+  --view-bg: #eef0ec;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111518; --panel: #192026; --ink: #e5e9ec; --mute: #9aa6b1; --line: #2b343c;
+    --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795; --housing: #1f272e;
+    --view-bg: #141a1f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111518; --panel: #192026; --ink: #e5e9ec; --mute: #9aa6b1; --line: #2b343c;
+  --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795; --housing: #1f272e;
+  --view-bg: #141a1f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-ui); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 28px;
+}
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
+.sub { color: var(--mute); font-size: 13px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--mute); margin: 0 0 8px; font-weight: 600; }
+.top { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; }
+@media (max-width: 980px) { .top { grid-template-columns: 1fr; } }
+#viewbox { position: relative; height: 640px; border-radius: 8px; overflow: hidden; background: var(--view-bg); }
+@media (max-width: 700px) { #viewbox { height: 380px; } }
+#viewbox canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.viewbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.viewbar .grow { flex: 1; }
+.overlay { position: absolute; left: 12px; top: 10px; font-size: 12px; color: var(--mute); pointer-events: none; }
+#inspect { position: absolute; right: 10px; top: 10px; width: 260px; max-width: calc(100% - 20px); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
+#inspect h3 { margin: 0 0 4px; font-size: 13px; }
+#inspect .mono { font-size: 12px; }
+#inspect .row { margin-top: 8px; }
+.legend { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; font-size: 12px; color: var(--mute); }
+.legend canvas { width: 240px; max-width: 100%; height: 12px; border-radius: 3px; }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 6px 8px; font: 12px/1.4 var(--font-data); color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,.12); white-space: nowrap; z-index: 2; }
+.controls { display: grid; gap: 11px; align-content: start; }
+.ctl { display: grid; gap: 4px; }
+.ctl label { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+.ctl label span.mono { color: var(--mute); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+select, button { font: 13px var(--font-ui); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; }
+select { max-width: 100%; }
+button { cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; padding: 6px 10px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+/* detector */
+.det { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
+@media (max-width: 760px) { .det { grid-template-columns: 1fr; } }
+.verdict { display: flex; align-items: center; gap: 14px; }
+.lamp { width: 22px; height: 22px; border-radius: 50%; background: var(--ok); flex: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 22%, transparent); }
+.det.alarm .lamp { background: var(--warn); box-shadow: 0 0 0 6px color-mix(in srgb, var(--warn) 30%, transparent); animation: pulse 1s infinite; }
+.det.idle .lamp { background: var(--mute); box-shadow: none; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 11px color-mix(in srgb, var(--warn) 8%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .det.alarm .lamp { animation: none; } }
+.vtext { font: 600 18px var(--font-ui); }
+.det.alarm .vtext { color: var(--warn); }
+.vsub { color: var(--mute); font-size: 12.5px; }
+.det.alarm { border-color: var(--warn); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.tile .k { font-size: 12px; color: var(--mute); }
+.tile .v { font: 600 22px var(--font-data); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.tile .s { font-size: 12px; color: var(--mute); overflow-wrap: anywhere; }
+.tile.alarm { border-color: var(--warn); }
+.tile.alarm .v { color: var(--warn); }
+.ntc .v { color: var(--ntc); }
+.bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .bottom { grid-template-columns: 1fr; } }
+canvas.chart { width: 100%; height: 190px; display: block; }
+.note { color: var(--mute); font-size: 12px; max-width: 100ch; }
+.note b { color: var(--ink); font-weight: 600; }
+.chips { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--mute); margin-top: 6px; }
+.chips i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+#nogl { padding: 30px; color: var(--mute); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>23s9p Module Twin 3D</h1>
+    <span class="sub">207 BYD FC4680 LFP cells · drag to rotate, scroll to zoom · click a cell to give it a soft short, click a shorted cell to open it</span>
+  </header>
+
+  <div class="top">
+    <section class="panel" aria-label="Module in 3-D">
+      <div class="viewbar">
+        <span class="label" style="margin:0">Module</span><span class="grow"></span>
+        <div class="seg" role="group" aria-label="Colour by">
+          <button type="button" id="m-surf" aria-pressed="true">Surface</button>
+          <button type="button" id="m-core" aria-pressed="false">Core</button>
+        </div>
+        <div class="seg" role="group" aria-label="View">
+          <button type="button" id="v-iso" aria-pressed="true">3-D</button>
+          <button type="button" id="v-top" aria-pressed="false">Top</button>
+          <button type="button" id="v-spin" aria-pressed="false">Spin</button>
+        </div>
+      </div>
+      <div id="viewbox">
+        <div class="overlay" id="ovl">coolant ribbons in blue · NTCs in orange</div>
+        <div class="tip" id="tip" hidden></div>
+        <div id="inspect" hidden>
+          <h3 id="ins-title">Cell</h3>
+          <div class="mono" id="ins-body"></div>
+          <div class="row"><button type="button" id="ins-back">Back to module</button><button type="button" id="ins-del">Remove short</button></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span id="lgmode">surface</span>
+        <span class="mono" id="lgmin">25 °C</span>
+        <canvas id="lgbar" width="480" height="24" aria-hidden="true"></canvas>
+        <span class="mono" id="lgmax">45 °C</span>
+        <span>· red ring = soft short (truth) · red glow = detector alarm</span>
+      </div>
+    </section>
+
+    <aside class="panel controls" aria-label="Controls">
+      <p class="label" style="margin:0">Run</p>
+      <div class="row">
+        <button class="primary" id="play" type="button">Pause</button>
+        <button id="reset" type="button">Reset</button>
+        <select id="speed" aria-label="Simulation speed">
+          <option value="10">10× real time</option>
+          <option value="30" selected>30× real time</option>
+          <option value="120">120× real time</option>
+          <option value="600">600× real time</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label for="load">Load profile</label>
+        <select id="load">
+          <option value="const">Constant discharge</option>
+          <option value="drive" selected>Drive cycle (synthetic)</option>
+          <option value="pulse">10 s pulses, 10 s rest</option>
+          <option value="rest">Rest (no current)</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label for="crate">C-rate (peak) <span class="mono" id="crate-v"></span></label>
+        <input type="range" id="crate" min="0" max="3" step="0.1" value="2">
+      </div>
+      <div class="ctl">
+        <label for="tin">Coolant inlet <span class="mono" id="tin-v"></span></label>
+        <input type="range" id="tin" min="10" max="40" step="1" value="25">
+      </div>
+      <div class="ctl">
+        <label for="flow">Coolant flow <span class="mono" id="flow-v"></span></label>
+        <input type="range" id="flow" min="0.5" max="12" step="0.5" value="4">
+      </div>
+      <p class="label" style="margin:4px 0 0">Next short (click a cell)</p>
+      <div class="ctl">
+        <label for="risc">Resistance</label>
+        <select id="risc">
+          <option value="1">1 Ω (≈ 11 W, beyond soft-short scope)</option>
+          <option value="3">3 Ω (≈ 3.6 W)</option>
+          <option value="10" selected>10 Ω (≈ 1.1 W)</option>
+          <option value="30">30 Ω (≈ 0.36 W)</option>
+          <option value="100">100 Ω (≈ 0.11 W)</option>
+          <option value="1000">1 kΩ (≈ 11 mW)</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label for="sloc">Radius in the cell</label>
+        <select id="sloc"><option value="0">r = 4 mm (core)</option><option value="1">r = 8 mm</option><option value="2" selected>r = 12 mm</option><option value="3">r = 16 mm</option><option value="4">r = 20 mm</option><option value="5">r = 22.2 mm (outer wrap)</option></select>
+      </div>
+      <div class="ctl">
+        <label for="shgt">Height in the cell</label>
+        <select id="shgt"><option value="base_end">near the base end</option><option value="lower">lower quarter</option><option value="mid" selected>mid-height</option><option value="upper">upper quarter</option><option value="cap_end">near the cap end</option></select>
+      </div>
+      <div class="ctl">
+        <label for="stype">Short type</label>
+        <select id="stype"><option>anode–cathode</option><option selected>Al–anode</option><option>Cu–cathode</option><option>Al–Cu</option></select>
+      </div>
+      <div class="ctl">
+        <label for="sfoot">Footprint</label>
+        <select id="sfoot"><option value="0.25">0.25 × 0.25 mm</option><option value="0.5">0.5 × 0.5 mm</option><option value="1.0" selected>1 × 1 mm</option><option value="2.0">2 × 2 mm</option><option value="4.0">4 × 4 mm</option></select>
+      </div>
+      <div class="ctl">
+        <label for="scase">Current collection (sets the electrical fingerprint)</label>
+        <select id="scase"><option value="B" selected>foils calibrated to the bench (B)</option><option value="A">literal teardown foils (A)</option></select>
+      </div>
+      <div class="ctl">
+        <label for="sdur">Duration</label>
+        <select id="sdur"><option value="1">1 s (flash)</option><option value="10">10 s</option><option value="60">60 s</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select>
+      </div>
+      <div class="row">
+        <button type="button" id="clear">Clear all shorts</button>
+        <span class="sub mono" id="tclock">t = 0 s</span>
+      </div>
+    </aside>
+  </div>
+
+  <section class="panel det idle" id="det" aria-live="polite">
+    <div class="verdict">
+      <div class="lamp" aria-hidden="true"></div>
+      <div>
+        <div class="vtext" id="det-text">Short detector: not trained yet</div>
+        <div class="vsub" id="det-sub">The Physics AI NN reads only what the BMS sees: pack current, the 23 group voltages and the 2 NTCs (and, at cell level, a per-cell impedance temperature).</div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="sub">Detector inputs</span>
+      <div class="seg" role="group" aria-label="Detector level">
+        <button type="button" id="d-grp" aria-pressed="true">Group level</button>
+        <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="tiles">
+    <div class="tile ntc"><div class="k">NTC 1 (inlet)</div><div class="v" id="ntc1">–</div><div class="s">what the BMS sees</div></div>
+    <div class="tile ntc"><div class="k">NTC 2 (outlet)</div><div class="v" id="ntc2">–</div><div class="s">what the BMS sees</div></div>
+    <div class="tile" id="t-ms"><div class="k">Hottest surface</div><div class="v" id="maxs">–</div><div class="s" id="maxs-at">–</div></div>
+    <div class="tile" id="t-mc"><div class="k">Hottest core</div><div class="v" id="maxc">–</div><div class="s" id="maxc-at">–</div></div>
+    <div class="tile" id="t-hp"><div class="k">Hottest point inside a shorted cell</div><div class="v" id="hp">–</div><div class="s" id="hp-at">3-D cell twin library</div></div>
+    <div class="tile"><div class="k">Module current</div><div class="v" id="imod">–</div><div class="s" id="icell">–</div></div>
+  </div>
+
+  <div class="bottom">
+    <section class="panel">
+      <p class="label">Temperatures over time</p>
+      <canvas class="chart" id="trend" width="1000" height="380" role="img" aria-label="Temperature traces"></canvas>
+      <div class="chips">
+        <span><i style="background:var(--ntc)"></i>NTC 1 / NTC 2</span>
+        <span><i style="background:var(--warn)"></i>hottest core</span>
+        <span><i style="background:var(--ink)"></i>hottest surface</span>
+        <span><i style="background:#8e44ad"></i>hottest point inside (3-D)</span>
+      </div>
+    </section>
+    <section class="panel">
+      <p class="label">Group voltages as the BMS measures them, deviation from the module mean</p>
+      <canvas class="chart" id="volts" width="1000" height="380" role="img" aria-label="Group voltage deviations"></canvas>
+      <div class="chips"><span>23 groups of 9 cells; red = group with a short (truth), outlined = group flagged by the detector</span></div>
+    </section>
+  </div>
+
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  // ---------------- geometry (mm), same as fig_module_23s9p.py
+  const D = 46.3, HC = 80.2, NS = 23, NP = 9, GAPX = 1.5, RIB = 2.5;
+  const PX = D + GAPX, PY = D * Math.sqrt(3) / 2 + RIB * 0.9;
+  const N = NS * NP;
+  const cx = new Float64Array(N), cy = new Float64Array(N), grp = new Int16Array(N), rowOf = new Int16Array(N);
+  for (let i = 0; i < NS; i++) for (let j = 0; j < NP; j++) {
+    const k = i * NP + j;
+    cx[k] = i * PX + (j % 2 ? PX / 2 : 0); cy[k] = j * PY; grp[k] = i; rowOf[k] = j;
+  }
+  const nb = Array.from({ length: N }, () => []);
+  for (let a = 0; a < N; a++) for (let b = a + 1; b < N; b++) {
+    if (Math.hypot(cx[a] - cx[b], cy[a] - cy[b]) < PX * 1.08) { nb[a].push(b); nb[b].push(a); }
+  }
+  const NR = NP - 1;
+  const ribCells = [];
+  for (let r = 0; r < NR; r++) {
+    const list = [];
+    for (let k = 0; k < N; k++) if (rowOf[k] === r || rowOf[k] === r + 1) list.push(k);
+    list.sort((a, b) => cx[a] - cx[b]);
+    if (r % 2 === 1) list.reverse();
+    ribCells.push(list);
+  }
+  const NTC1 = 0 * NP + 0, NTC2 = 0 * NP + (NP - 1);
+
+  // ---------------- 3-D cell twin: unit-short response library (paper 1.2)
+  const LIB = /*LIB*/null;
+  const LT = LIB.t;
+  function libEntry(ri, h) { const r = LIB.radii[ri]; return LIB.entries.find(e => e.r === r && e.h === h); }
+  function riseAt(e, tau) {
+    if (tau <= 0) return 0;
+    if (tau <= LT[0]) return e.rise[0] * tau / LT[0];
+    if (tau >= LT[LT.length - 1]) return e.rise[e.rise.length - 1];
+    let i = 1; while (LT[i] < tau) i++;
+    const f = (Math.log(tau) - Math.log(LT[i - 1])) / (Math.log(LT[i]) - Math.log(LT[i - 1]));
+    return e.rise[i - 1] + f * (e.rise[i] - e.rise[i - 1]);
+  }
+
+  // ---------------- electrical fingerprint of a short by position (fingerprint.py), DC, inner side
+  const FP = /*FP*/null;
+
+  // ---------------- module model (shared with the training simulator, module_sim.py)
+  const SIM = /*SIM*/null;
+  const P = SIM.P;
+  function ocv(s) {
+    s = Math.min(0.999, Math.max(0.001, s));
+    return 3.25 + 0.08 * s + 0.12 * Math.exp(-(1 - s) / 0.02) - 0.35 * Math.exp(-s / 0.03) + 0.02 * Math.tanh((s - 0.6) / 0.05);
+  }
+
+  // ---------------- state
+  let Tc, Ts, soc, Risc, t, hist, V1, Vg, Vmeas, I, rng, alarmHist, socMean = 0.8;
+  const ui = { load: $("load"), crate: $("crate"), tin: $("tin"), flow: $("flow"), risc: $("risc"), speed: $("speed") };
+  let running = true, mode = "surf", detLevel = "group";
+  const meta = new Map();
+  // per-cell spread (fixed seed so a reset gives the same module)
+  function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t2 = Math.imul(a ^ a >>> 15, 1 | a); t2 = t2 + Math.imul(t2 ^ t2 >>> 7, 61 | t2) ^ t2; return ((t2 ^ t2 >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { let u = 0, v = 0; while (u === 0) u = r(); v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  const capK = new Float64Array(N), resK = new Float64Array(N);
+  { const r = mulberry(7); for (let k = 0; k < N; k++) { capK[k] = P.Q_Ah * (1 + P.sd_cap * gauss(r)); resK[k] = P.R0 * (1 + P.sd_res * gauss(r)); } }
+  function reset() {
+    const T0 = +ui.tin.value;
+    Tc = new Float64Array(N).fill(T0); Ts = new Float64Array(N).fill(T0);
+    soc = new Float64Array(N).fill(0.8); V1 = new Float64Array(N); Vg = new Float64Array(NS); Vmeas = new Float64Array(NS);
+    t = 0; hist = []; I = 0; rng = mulberry(11); alarmHist = [];
+    if (!Risc) Risc = new Float64Array(N);
+    if (det) det.reset();
+    for (const m of meta.values()) { m.ton = 0; m.steps = []; m.P = 0; }
+  }
+  function cellCurrent(time) {
+    const c = +ui.crate.value * P.Q_Ah;
+    switch (ui.load.value) {
+      case "const": return c;
+      case "rest": return 0;
+      case "pulse": return (Math.floor(time / 10) % 2 === 0) ? c : 0;
+      default: {
+        const u = time % 600;
+        let f = 0.30 + 0.12 * Math.sin(2 * Math.PI * u / 97) + 0.08 * Math.sin(2 * Math.PI * u / 31);
+        if ((u > 60 && u < 75) || (u > 310 && u < 330)) f = 1.0;
+        if ((u > 140 && u < 160) || (u > 420 && u < 440)) f = -0.45;
+        if (u > 500 && u < 560) f = 0.0;
+        return c * f;
+      }
+    }
+  }
+  function shortOn(k) { const m = meta.get(k); return m && t >= m.ton && t < m.ton + m.dur; }
+  function shortPower(k) { const m = meta.get(k); return shortOn(k) && m ? (m.Pnow || 0) : 0; }
+  function hotspot(k) {
+    const m = meta.get(k); if (!m) return null;
+    const e = libEntry(m.ri, m.h), mult = LIB.mult[m.w] || 1;
+    let d = 0; for (const s of m.steps) d += s.dP * riseAt(e, t - s.t);
+    return Ts[k] + mult * d;
+  }
+
+  // one step of the module (same equations as module_sim.py). Each cell is a two-port with the short:
+  //   I_sc = (U - Z_tr i) / (R_sc + Z_th),  V = U - Z i - Z_tr I_sc,
+  // Z_th, Z_tr from the electrode-sheet fingerprint at the short's position.
+  const Tcool = new Float64Array(N), nRib = new Float64Array(N);
+  const Up = new Float64Array(N), Zp = new Float64Array(N), Uc = new Float64Array(N), Rk = new Float64Array(N);
+  const icell = new Float64Array(N), Isc = new Float64Array(N), dTc = new Float64Array(N), dTs = new Float64Array(N);
+  const Timp1 = new Float64Array(N);
+  const impBias = new Float64Array(N);
+  { const r = mulberry(23); for (let k = 0; k < N; k++) impBias[k] = gauss(r); }
+  function step(dt) {
+    I = cellCurrent(t) * NP;                          // module current, A, + discharge
+    // usable window, as in module_sim.py: the module rests outside 12-97 % state of charge
+    let sm = 0; for (let k = 0; k < N; k++) sm += soc[k]; sm /= N;
+    socMean = sm;
+    if ((sm < 0.12 && I > 0) || (sm > 0.97 && I < 0)) I = 0;
+    const Tin = +ui.tin.value, Rdc = P.R0 + P.R1;
+    // ---- electrical
+    for (let k = 0; k < N; k++) {
+      const fT = Math.exp(P.Ea_R * (1 / (Ts[k] + 273.15) - 1 / 298.15));
+      Rk[k] = resK[k] * fT; Uc[k] = ocv(soc[k]) - V1[k];
+      let a = 0, Ztr = 0;
+      if (Risc[k] > 0 && shortOn(k)) { const m = meta.get(k); Ztr = m.ftr * Rdc; a = Ztr / (Risc[k] + m.fth * Rdc); }
+      Up[k] = Uc[k] * (1 - a); Zp[k] = Rk[k] - Ztr * a;
+    }
+    for (let g = 0; g < NS; g++) {
+      let sG = 0, sUG = 0;
+      for (let j = 0; j < NP; j++) { const k = g * NP + j; sG += 1 / Zp[k]; sUG += Up[k] / Zp[k]; }
+      const V = (sUG - I) / sG; Vg[g] = V;
+      for (let j = 0; j < NP; j++) {
+        const k = g * NP + j, ik = (Up[k] - V) / Zp[k];
+        icell[k] = ik;
+        if (Risc[k] > 0 && shortOn(k)) { const m = meta.get(k); Isc[k] = (Uc[k] - m.ftr * Rdc * ik) / (Risc[k] + m.fth * Rdc); } else Isc[k] = 0;
+      }
+    }
+    const ea = Math.exp(-dt / P.tau1);
+    for (let k = 0; k < N; k++) {
+      V1[k] = V1[k] * ea + P.R1 * icell[k] * (1 - ea);
+      soc[k] -= dt * (icell[k] + Isc[k]) / (capK[k] * 3600);
+    }
+    // ---- thermal
+    Tcool.fill(0); nRib.fill(0);
+    const mdotRib = (+ui.flow.value / 60) * 1.05 / NR;
+    for (let r = 0; r < NR; r++) {
+      let T = Tin;
+      for (const k of ribCells[r]) { Tcool[k] += T; nRib[k] += 1; T += P.G_rib * (Ts[k] - T) / (mdotRib * P.cp_cool); }
+    }
+    for (let k = 0; k < N; k++) {
+      let Q = icell[k] * icell[k] * Rk[k] + icell[k] * V1[k];
+      if (Risc[k] > 0) {
+        const Pk = Isc[k] * Isc[k] * Risc[k]; Q += Pk;
+        const m = meta.get(k);
+        if (m && Math.abs(Pk - m.P) > Math.max(0.01 * m.P, 1e-4)) { m.steps.push({ t, dP: Pk - m.P }); m.P = Pk; }
+        if (m) m.Pnow = Pk;
+      }
+      const qcs = (Tc[k] - Ts[k]) / P.R_cs;
+      let qnb = 0; for (const b of nb[k]) qnb += P.G_nb * (Ts[k] - Ts[b]);
+      const qrib = P.G_rib * nRib[k] * (Ts[k] - Tcool[k] / Math.max(1, nRib[k]));
+      dTc[k] = (Q - qcs) / P.C_core; dTs[k] = (qcs - qrib - qnb) / P.C_can;
+    }
+    for (let k = 0; k < N; k++) { Tc[k] += dt * dTc[k]; Ts[k] += dt * dTs[k]; }
+    // ---- what the BMS measures: group voltages (noise, resolution); impedance temperature per cell
+    for (let g = 0; g < NS; g++) Vmeas[g] = Math.round((Vg[g] + P.v_noise * gauss(rng)) / P.v_lsb) * P.v_lsb;
+    for (let k = 0; k < N; k++) Timp1[k] = 0.5 * (Tc[k] + Ts[k]) + impBias[k] + P.imp_noise * gauss(rng);
+    t += dt;
+    return I;
+  }
+
+  // ---------------- detector (Physics AI NN), weights from training in the container
+  const NN = /*NN*/null;
+  const det = NN ? makeDetector(NN) : null;
+  /*DETECTOR*/
+
+  // ---------------- colour map
+  const STOPS = [[0, [20, 11, 52]], [0.25, [101, 21, 110]], [0.5, [188, 55, 84]], [0.75, [237, 105, 37]], [1, [252, 255, 164]]];
+  function cmapRGB(u) {
+    u = Math.min(1, Math.max(0, u));
+    for (let i = 1; i < STOPS.length; i++) if (u <= STOPS[i][0]) {
+      const [u0, c0] = STOPS[i - 1], [u1, c1] = STOPS[i], f = (u - u0) / (u1 - u0);
+      return c0.map((v, n) => v + f * (c1[n] - v));
+    }
+    return [252, 255, 164];
+  }
+  const cmap = u => `rgb(${cmapRGB(u).map(Math.round).join(",")})`;
+  { const lg = $("lgbar"), x = lg.getContext("2d"); for (let i = 0; i < lg.width; i++) { x.fillStyle = cmap(i / (lg.width - 1)); x.fillRect(i, 0, 1, lg.height); } }
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  // ---------------- 3-D scene
+  const box = $("viewbox");
+  let gl = null;
+  if (window.THREE) {
+    try { gl = build3d(); } catch (err) { console.error(err); gl = null; }
+  }
+  if (!gl) { const d = document.createElement("div"); d.id = "nogl"; d.textContent = "3-D view unavailable (WebGL or three.js could not load)."; box.appendChild(d); }
+
+  function build3d() {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    box.insertBefore(renderer.domElement, box.firstChild);
+    const scene = new THREE.Scene();
+    const clutter = new THREE.Group(); scene.add(clutter);
+    const camera = new THREE.PerspectiveCamera(32, 1, 5, 20000);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.495;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 0.85));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-400, 900, 600); scene.add(sun);
+    const Wm = (NS - 1) * PX + PX / 2, Hm = (NP - 1) * PY;
+    const X0 = Wm / 2, Z0 = Hm / 2;
+    const px = k => cx[k] - X0, pz = k => cy[k] - Z0;
+    // housing plate and manifold
+    const housingMat = new THREE.MeshStandardMaterial({ color: 0x9aa3a8, roughness: 0.8, metalness: 0.2 });
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(Wm + D + 30, 6, Hm + D + 30), housingMat);
+    plate.position.set(0, -3, 0); scene.add(plate);
+    const coolMat = new THREE.MeshStandardMaterial({ color: 0x2f7fc4, roughness: 0.5, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+    const man = new THREE.Mesh(new THREE.BoxGeometry(14, 64, Hm + D), coolMat);
+    man.position.set(-X0 - D / 2 - 14, 40, 0); scene.add(man);
+    // ribbons: vertical serpentine walls between rows
+    for (let r = 0; r < NR; r++) {
+      const list = ribCells[r].slice().sort((a, b) => cx[a] - cx[b]);
+      const pos = [], idx = [];
+      list.forEach((k, n) => {
+        const zz = cy[k] + (D / 2 + RIB / 2) * (rowOf[k] === r ? 1 : -1) - Z0, xx = cx[k] - X0;
+        pos.push(xx, 12, zz, xx, 70, zz);
+        if (n) { const a = 2 * (n - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      });
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+      clutter.add(new THREE.Mesh(g, coolMat));
+    }
+    // cells
+    const cellGeo = new THREE.CylinderGeometry(D / 2 - 0.4, D / 2 - 0.4, HC, 40, 1);
+    const cellMat = new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.1, transparent: true, opacity: 1 });
+    const cells = new THREE.InstancedMesh(cellGeo, cellMat, N);
+    const M = new THREE.Matrix4(), col = new THREE.Color();
+    for (let k = 0; k < N; k++) { M.makeTranslation(px(k), HC / 2, pz(k)); cells.setMatrixAt(k, M); cells.setColorAt(k, col.setRGB(0.3, 0.2, 0.5)); }
+    scene.add(cells);
+    // positive terminals and group bus bars
+    const termMat = new THREE.MeshStandardMaterial({ color: 0xc9ccce, roughness: 0.35, metalness: 0.7 });
+    const terms = new THREE.InstancedMesh(new THREE.CylinderGeometry(6, 6, 2, 20), termMat, N);
+    for (let k = 0; k < N; k++) { M.makeTranslation(px(k), HC + 1, pz(k)); terms.setMatrixAt(k, M); }
+    clutter.add(terms);
+    const busMat = new THREE.MeshStandardMaterial({ color: 0xb87333, roughness: 0.4, metalness: 0.6, transparent: true, opacity: 0.85 });
+    for (let g = 0; g < NS; g++) {
+      for (let j = 0; j + 1 < NP; j++) {
+        const a = g * NP + j, b = a + 1;
+        const dx = cx[b] - cx[a], dz = cy[b] - cy[a], L = Math.hypot(dx, dz);
+        const bar = new THREE.Mesh(new THREE.BoxGeometry(6, 1.2, L), busMat);
+        bar.position.set((px(a) + px(b)) / 2, HC + 2.6, (pz(a) + pz(b)) / 2);
+        bar.rotation.y = Math.atan2(dx, dz); clutter.add(bar);
+      }
+    }
+    // NTCs
+    const ntcMat = new THREE.MeshStandardMaterial({ color: 0xe0782f, roughness: 0.4, emissive: 0x3a1a05 });
+    for (const k of [NTC1, NTC2]) { const s = new THREE.Mesh(new THREE.SphereGeometry(4.5, 16, 12), ntcMat); s.position.set(px(k) - D / 2 - 1.5, HC * 0.55, pz(k)); scene.add(s); }
+    // group numbers
+    function label(text, size) {
+      const c = document.createElement("canvas"); c.width = 128; c.height = 64;
+      const x = c.getContext("2d"); x.font = `600 40px ${css("--font-data") || "monospace"}`; x.fillStyle = "#6b7680"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(text, 64, 34);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+      sp.scale.set(size * 2, size, 1); return sp;
+    }
+    for (let g = 0; g < NS; g++) { const s = label(String(g + 1), 14); s.position.set(px(g * NP) + PX / 4, 4, -Z0 - D / 2 - 18); scene.add(s); }
+    // truth markers (red rings) and detector glow (halos)
+    const ringGeo = new THREE.TorusGeometry(D / 2 - 2, 1.6, 8, 40);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xd0362a });
+    const rings = new Map();
+    const haloGeo = new THREE.CylinderGeometry(D / 2 + 2.5, D / 2 + 2.5, HC + 8, 40, 1, true);
+    const haloMat = new THREE.MeshBasicMaterial({ color: 0xff2a1a, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
+    const halos = new THREE.InstancedMesh(haloGeo, haloMat, N); halos.count = 0; scene.add(halos);
+    // alarm beacons: a red pin above each flagged cell
+    const pinGeo = new THREE.ConeGeometry(9, 26, 20); pinGeo.rotateX(Math.PI); pinGeo.translate(0, 13, 0);
+    const pinMat = new THREE.MeshBasicMaterial({ color: 0xe8261a });
+    const pins = new THREE.InstancedMesh(pinGeo, pinMat, N); pins.count = 0; scene.add(pins);
+
+    // ---- inspector: the selected shorted cell, cut open
+    const insp = new THREE.Group(); insp.visible = false; scene.add(insp);
+    const RC = 3.16, RO = D / 2 - 0.4;
+    const fieldCv = document.createElement("canvas"); fieldCv.width = 96; fieldCv.height = 160;
+    const fieldTex = new THREE.CanvasTexture(fieldCv);
+    const fieldCv2 = document.createElement("canvas"); fieldCv2.width = 96; fieldCv2.height = 160;
+    const fieldTex2 = new THREE.CanvasTexture(fieldCv2);
+    const canMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.5, side: THREE.DoubleSide });
+    insp.add(new THREE.Mesh(new THREE.CylinderGeometry(RO, RO, HC, 48, 1, true, 0, 1.5 * Math.PI), canMat));
+    insp.add(new THREE.Mesh(new THREE.CylinderGeometry(RC, RC, HC, 16, 1, true, 0, 1.5 * Math.PI), new THREE.MeshStandardMaterial({ color: 0xdddddd, side: THREE.DoubleSide })));
+    for (const yy of [0, HC]) {
+      const ring = new THREE.Mesh(new THREE.RingGeometry(RC, RO, 48, 1, 0, 1.5 * Math.PI), canMat);
+      ring.rotation.x = -Math.PI / 2; ring.rotation.z = 0; ring.position.y = yy - HC / 2;
+      // RingGeometry angles run from +x; align with the cylinder's theta (from +z): rotate
+      ring.rotation.z = -Math.PI / 2; insp.add(ring);
+    }
+    for (const th of [0, 1.5 * Math.PI]) {
+      const f = new THREE.Mesh(new THREE.PlaneGeometry(RO - RC, HC), new THREE.MeshBasicMaterial({ map: th ? fieldTex2 : fieldTex, side: THREE.DoubleSide }));
+      f.rotation.y = th - Math.PI / 2;
+      const rm = (RC + RO) / 2; f.position.set(Math.sin(th) * rm, 0, Math.cos(th) * rm);
+      if (th > 0) f.scale.x = -1;
+      insp.add(f);
+    }
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(1.1, 12, 10), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    insp.add(dot);
+    let inspK = -1, hiddenK = -1;
+
+    function resize() {
+      const w = box.clientWidth, h = box.clientHeight;
+      renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(box); resize();
+    // camera presets with a short tween
+    let tween = null;
+    function goTo(pos, target, ms = 700) {
+      const p0 = camera.position.clone(), t0 = controls.target.clone(), s = performance.now();
+      tween = now => { const u = Math.min(1, (now - s) / ms), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+        camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, target, e); if (u >= 1) tween = null; };
+    }
+    const ISO = () => [new THREE.Vector3(-300, 620, 800), new THREE.Vector3(0, 10, 30)];
+    const TOP = () => [new THREE.Vector3(0, 1350, 1), new THREE.Vector3(0, 0, 0)];
+    camera.position.copy(ISO()[0]); controls.target.copy(ISO()[1]);
+    let spin = false;
+
+    // picking
+    const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+    function pickAt(ev) {
+      const r = renderer.domElement.getBoundingClientRect();
+      mouse.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(mouse, camera);
+      const hit = ray.intersectObject(cells, false)[0];
+      return hit ? hit.instanceId : -1;
+    }
+    function setInspect(k) {
+      inspK = k; insp.visible = k >= 0; $("inspect").hidden = k < 0;
+      cellMat.opacity = k >= 0 ? 0.08 : 1; cellMat.depthWrite = k < 0; clutter.visible = k < 0;
+      for (const mesh of rings.values()) mesh.visible = k < 0;
+      if (hiddenK >= 0) { M.makeTranslation(px(hiddenK), HC / 2, pz(hiddenK)); cells.setMatrixAt(hiddenK, M); }
+      hiddenK = k; if (k >= 0) { M.makeScale(1e-4, 1e-4, 1e-4); cells.setMatrixAt(k, M); }
+      cells.instanceMatrix.needsUpdate = true;
+      if (k >= 0) {
+        insp.position.set(px(k), HC / 2, pz(k));
+        const c = new THREE.Vector3(px(k), HC / 2, pz(k));
+        goTo(c.clone().add(new THREE.Vector3(-210, 120, 210)), c);
+      } else { const [p, tg] = ISO(); goTo(p, tg); }
+    }
+    return { renderer, scene, camera, controls, cells, col, rings, ringGeo, ringMat, halos, pins, M, px, pz, insp, fieldCv, fieldTex, fieldCv2, fieldTex2, dot,
+             RC, RO, get inspK() { return inspK; }, setInspect, pickAt, goTo, ISO, TOP,
+             get tween() { return tween; }, set spin(v) { spin = v; }, get spin() { return spin; } };
+  }
+
+  function fieldTexture(k) {
+    // illustrative field on the cut face: peak from the 3-D library, shape from the diffusion lengths
+    paintFace(k, gl.fieldCv, true); paintFace(k, gl.fieldCv2, false);
+    gl.fieldTex.needsUpdate = true; gl.fieldTex2.needsUpdate = true;
+    const m = meta.get(k);
+    gl.dot.position.set(0, LIB.z[m.h] - HC / 2, LIB.radii[m.ri]); gl.dot.visible = shortOn(k);
+  }
+  function paintFace(k, c, withShort) {
+    const m = meta.get(k), x = c.getContext("2d"), img = x.createImageData(c.width, c.height);
+    const r0 = LIB.radii[m.ri], z0 = LIB.z[m.h], hp = hotspot(k), base = Ts[k] + 0.5 * (Tc[k] - Ts[k]);
+    const tau = Math.max(1, t - (m.steps.length ? m.steps[0].t : t));
+    const Lr = Math.max(+m.w / 2, 1e3 * Math.sqrt(4.8e-7 * Math.min(tau, 1800))), Lz = Math.max(+m.w / 2, 1e3 * Math.sqrt(1.0e-5 * Math.min(tau, 1800)));
+    const on = shortOn(k);
+    for (let j = 0; j < c.height; j++) for (let i = 0; i < c.width; i++) {
+      const r = gl.RC + (gl.RO - gl.RC) * (i + 0.5) / c.width, z = HC * (1 - (j + 0.5) / c.height);
+      const core = 1 - Math.pow((r - gl.RC) / (gl.RO - gl.RC), 2) * 0.6;
+      let T = Ts[k] + (Tc[k] - Ts[k]) * core;
+      if (withShort && hp !== null) T += (hp - Ts[k]) * Math.exp(-Math.pow((r - r0) / Lr, 2) - Math.pow((z - z0) / Lz, 2));
+      const u = (T - lo) / Math.max(1, (Math.max(hi, hp || hi) - lo));
+      const rgb = cmapRGB(u); const wrap = (Math.floor((r - gl.RC) / 0.3025) % 8 === 0) ? 0.88 : 1;
+      const o = 4 * (j * c.width + i); img.data[o] = rgb[0] * wrap; img.data[o + 1] = rgb[1] * wrap; img.data[o + 2] = rgb[2] * wrap; img.data[o + 3] = 255;
+    }
+    x.putImageData(img, 0, 0);
+  }
+
+  let lo = 25, hi = 45;
+  function draw3d(now) {
+    if (!gl) return;
+    const vals = mode === "surf" ? Ts : Tc;
+    let mn = Infinity, mx = -Infinity;
+    for (let k = 0; k < N; k++) { mn = Math.min(mn, vals[k]); mx = Math.max(mx, vals[k]); }
+    const tmin = Math.floor(mn * 2) / 2, tmax = Math.max(tmin + 2, Math.ceil(mx * 2) / 2);
+    lo += (tmin - lo) * 0.2; hi += (tmax - hi) * 0.2;
+    $("lgmin").textContent = lo.toFixed(1) + " °C"; $("lgmax").textContent = hi.toFixed(1) + " °C";
+    $("lgmode").textContent = mode === "surf" ? "surface" : "core";
+    for (let k = 0; k < N; k++) { const c = cmapRGB((vals[k] - lo) / (hi - lo)); gl.cells.setColorAt(k, gl.col.setRGB(c[0] / 255, c[1] / 255, c[2] / 255)); }
+    gl.cells.instanceColor.needsUpdate = true;
+    // rings for the true shorts
+    for (const [k, mesh] of gl.rings) if (!(Risc[k] > 0)) { gl.scene.remove(mesh); gl.rings.delete(k); }
+    for (let k = 0; k < N; k++) if (Risc[k] > 0 && !gl.rings.has(k)) {
+      const mesh = new THREE.Mesh(gl.ringGeo, gl.ringMat); mesh.rotation.x = Math.PI / 2; mesh.position.set(gl.px(k), HC + 4.5, gl.pz(k));
+      mesh.visible = gl.inspK < 0; gl.scene.add(mesh); gl.rings.set(k, mesh);
+    }
+    // detector halos
+    const flagged = det ? det.flaggedCells(detLevel) : [];
+    gl.halos.count = flagged.length;
+    flagged.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.halos.setMatrixAt(n, gl.M); });
+    gl.halos.instanceMatrix.needsUpdate = true;
+    gl.halos.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(now / 160));
+    // one pin per flagged group (group level) or per flagged cell (cell level), bobbing above it
+    const pinCells = detLevel === "cell" ? flagged : (det ? det.flaggedGroups().map(g => g * NP + 4) : []);
+    gl.pins.count = pinCells.length;
+    pinCells.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC + 30 + 6 * Math.sin(now / 250), gl.pz(k)); gl.pins.setMatrixAt(n, gl.M); });
+    gl.pins.instanceMatrix.needsUpdate = true; gl.pins.visible = gl.inspK < 0;
+    if (gl.inspK >= 0) {
+      if (!meta.has(gl.inspK)) gl.setInspect(-1); else { fieldTexture(gl.inspK); inspectText(gl.inspK); }
+    }
+    if (gl.tween) gl.tween(now);
+    if (gl.spin && !gl.tween) { const p = gl.camera.position.clone().sub(gl.controls.target); p.applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.003); gl.camera.position.copy(gl.controls.target.clone().add(p)); }
+    gl.controls.update();
+    gl.renderer.render(gl.scene, gl.camera);
+  }
+
+  // ---------------- traces
+  const tr = $("trend"), trx = tr.getContext("2d");
+  function drawTrend() {
+    const w = tr.width, h = tr.height, L = 78, R = 12, T = 12, B = 34;
+    trx.clearRect(0, 0, w, h);
+    if (hist.length < 2) return;
+    const t0 = hist[0].t, t1 = hist[hist.length - 1].t;
+    let mn = Infinity, mx = -Infinity;
+    for (const p of hist) for (const v of [p.n1, p.n2, p.ms, p.mc, p.hp]) { if (!isFinite(v)) continue; mn = Math.min(mn, v); mx = Math.max(mx, v); }
+    mn = Math.floor(mn - 0.5); mx = Math.max(mn + 3, Math.ceil(mx + 0.5));
+    const X = tt => L + (w - L - R) * (tt - t0) / Math.max(1, t1 - t0), Y = v => T + (h - T - B) * (1 - (v - mn) / (mx - mn));
+    trx.strokeStyle = css("--line"); trx.lineWidth = 1; trx.fillStyle = css("--mute");
+    trx.font = `20px ${css("--font-data")}`; trx.textAlign = "right"; trx.textBaseline = "middle";
+    for (let i = 0; i <= 4; i++) { const v = mn + (mx - mn) * i / 4, y = Y(v); trx.beginPath(); trx.moveTo(L, y); trx.lineTo(w - R, y); trx.stroke(); trx.fillText(v.toFixed(v >= 100 ? 0 : 1), L - 6, y); }
+    trx.textAlign = "center"; trx.textBaseline = "top";
+    for (let i = 0; i <= 4; i++) { const tt = t0 + (t1 - t0) * i / 4; trx.fillText(fmtT(tt), X(tt), h - B + 8); }
+    // alarm bands
+    trx.fillStyle = css("--warn"); trx.globalAlpha = 0.12;
+    for (const p of hist) if (p.al) trx.fillRect(X(p.t) - 2, T, 4, h - T - B);
+    trx.globalAlpha = 1;
+    const line = (key, c, wdt, dash) => {
+      trx.strokeStyle = c; trx.lineWidth = wdt; trx.setLineDash(dash || []); trx.beginPath(); let pen = false;
+      hist.forEach(p => { const v = p[key]; if (!isFinite(v)) { pen = false; return; } pen ? trx.lineTo(X(p.t), Y(v)) : trx.moveTo(X(p.t), Y(v)); pen = true; });
+      trx.stroke(); trx.setLineDash([]);
+    };
+    line("hp", "#8e44ad", 2.5); line("mc", css("--warn"), 2.5); line("ms", css("--ink"), 2); line("n1", css("--ntc"), 2.5); line("n2", css("--ntc"), 2.5, [8, 6]);
+  }
+  const vc = $("volts"), vcx = vc.getContext("2d");
+  function drawVolts() {
+    const w = vc.width, h = vc.height, L = 64, R = 12, T = 16, B = 34;
+    vcx.clearRect(0, 0, w, h);
+    const mean = Vmeas.reduce((a, b) => a + b, 0) / NS;
+    const d = Array.from(Vmeas, x => (x - mean) * 1000);
+    const lim = Math.max(1, Math.ceil(Math.max(...d.map(Math.abs)) * 1.2));
+    const Y = val => T + (h - T - B) * (0.5 - val / (2 * lim));
+    vcx.strokeStyle = css("--line"); vcx.lineWidth = 1; vcx.fillStyle = css("--mute");
+    vcx.font = `20px ${css("--font-data")}`; vcx.textAlign = "right"; vcx.textBaseline = "middle";
+    for (const val of [-lim, 0, lim]) { vcx.beginPath(); vcx.moveTo(L, Y(val)); vcx.lineTo(w - R, Y(val)); vcx.stroke(); vcx.fillText(`${val > 0 ? "+" : ""}${val} mV`, L - 6, Y(val)); }
+    const bw = (w - L - R) / NS, flaggedG = det ? det.flaggedGroups() : [];
+    for (let g = 0; g < NS; g++) {
+      let has = false; for (let j = 0; j < NP; j++) if (Risc[g * NP + j] > 0) has = true;
+      vcx.fillStyle = has ? css("--warn") : css("--accent");
+      const y0 = Y(0), y1 = Y(d[g]);
+      vcx.fillRect(L + g * bw + bw * 0.15, Math.min(y0, y1), bw * 0.7, Math.max(1.5, Math.abs(y1 - y0)));
+      if (flaggedG.includes(g)) { vcx.strokeStyle = css("--warn"); vcx.lineWidth = 3; vcx.strokeRect(L + g * bw + 2, T, bw - 4, h - T - B); }
+      if (g % 2 === 0) { vcx.fillStyle = css("--mute"); vcx.textAlign = "center"; vcx.textBaseline = "top"; vcx.fillText(String(g + 1), L + g * bw + bw / 2, h - B + 8); }
+    }
+  }
+  function fmtT(s) { return s < 120 ? `${s.toFixed(0)} s` : s < 7200 ? `${(s / 60).toFixed(1)} min` : `${(s / 3600).toFixed(2)} h`; }
+
+  // ---------------- readouts
+  function cellName(k) { return `group ${grp[k] + 1}, row ${rowOf[k] + 1}`; }
+  function readouts() {
+    let ks = 0, kc = 0;
+    for (let k = 1; k < N; k++) { if (Ts[k] > Ts[ks]) ks = k; if (Tc[k] > Tc[kc]) kc = k; }
+    $("ntc1").textContent = Ts[NTC1].toFixed(2) + " °C"; $("ntc2").textContent = Ts[NTC2].toFixed(2) + " °C";
+    $("maxs").textContent = Ts[ks].toFixed(1) + " °C"; $("maxs-at").textContent = cellName(ks);
+    $("maxc").textContent = Tc[kc].toFixed(1) + " °C"; $("maxc-at").textContent = cellName(kc);
+    $("t-mc").classList.toggle("alarm", Tc[kc] > 50); $("t-ms").classList.toggle("alarm", Ts[ks] > 45);
+    $("imod").textContent = I.toFixed(0) + " A"; $("icell").textContent = `${(I / NP).toFixed(1)} A per cell (${(I / NP / P.Q_Ah).toFixed(2)} C)`;
+    let hp = -Infinity, hk = -1;
+    for (const k of meta.keys()) { const v = hotspot(k); if (v > hp) { hp = v; hk = k; } }
+    $("hp").textContent = hk >= 0 ? hp.toFixed(1) + " °C" : "no short";
+    $("hp-at").textContent = hk >= 0 ? cellName(hk) + `, r = ${LIB.radii[meta.get(hk).ri]} mm` : "3-D cell twin library";
+    $("t-hp").classList.toggle("alarm", hp > 80);
+    let big = 0; for (const k of meta.keys()) big = Math.max(big, shortPower(k));
+    if (hp > 130) $("hp-at").textContent = cellName(hk) + ": above ~130 °C the separator melts; linear model no longer valid";
+    if (big > 4) $("hp-at").textContent = `short of ${big.toFixed(1)} W: beyond soft-short scope (escalation not modelled)`;
+    $("tclock").textContent = "t = " + fmtT(t) + ` · SOC ${(100 * socMean).toFixed(0)} %` + (socMean < 0.12 ? " (empty, resting)" : "");
+    detReadout();
+    return { ms: Ts[ks], mc: Tc[kc], hp: hk >= 0 ? hp : NaN };
+  }
+  function detReadout() {
+    const box2 = $("det");
+    if (!det) { box2.className = "panel det idle"; return; }
+    const v = det.verdict(detLevel);
+    box2.className = "panel det " + (v.alarm ? "alarm" : "ok");
+    $("det-text").textContent = v.text; $("det-sub").textContent = v.sub;
+  }
+  function inspectText(k) {
+    const m = meta.get(k), Pk = shortPower(k);
+    $("ins-title").textContent = `${cellName(k)}: ${m.type} short, ${m.R} Ω`;
+    $("ins-body").innerHTML = `r = ${LIB.radii[m.ri]} mm, ${m.h.replace("_", " ")}, ${m.w} mm footprint<br>` +
+      `power ${Pk.toFixed(2)} W${shortOn(k) ? "" : " (open now)"}${m.dur < 1e8 ? `, lasts ${m.dur} s` : ""}<br>` +
+      `${(m.s / 1000).toFixed(2)} m along the cathode; terminal sees ${(100 * m.ftr).toFixed(0)} % (case ${m.kase})<br>` +
+      `hottest inside ${hotspot(k).toFixed(1)} °C · can ${Ts[k].toFixed(1)} °C<br>` +
+      `cut-face colours: ${lo.toFixed(0)} – ${Math.max(hi, hotspot(k)).toFixed(0)} °C<br>` +
+      `<span style="color:var(--mute)">peak from the 3-D library; field shape from the diffusion lengths (illustrative)</span>`;
+  }
+
+  // ---------------- controls
+  function labels() {
+    $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C (${(+ui.crate.value * P.Q_Ah).toFixed(0)} A/cell)`;
+    $("tin-v").textContent = `${ui.tin.value} °C`; $("flow-v").textContent = `${(+ui.flow.value).toFixed(1)} L/min`;
+  }
+  ["crate", "tin", "flow"].forEach(id => ui[id].addEventListener("input", labels));
+  $("play").addEventListener("click", () => { running = !running; $("play").textContent = running ? "Pause" : "Run"; });
+  $("reset").addEventListener("click", () => reset());
+  $("clear").addEventListener("click", () => { Risc.fill(0); meta.clear(); if (gl) gl.setInspect(-1); });
+  const press = (on, off) => { $(on).setAttribute("aria-pressed", "true"); off.forEach(o => $(o).setAttribute("aria-pressed", "false")); };
+  $("m-surf").addEventListener("click", () => { mode = "surf"; press("m-surf", ["m-core"]); });
+  $("m-core").addEventListener("click", () => { mode = "core"; press("m-core", ["m-surf"]); });
+  $("d-grp").addEventListener("click", () => { detLevel = "group"; press("d-grp", ["d-cell"]); });
+  $("d-cell").addEventListener("click", () => { detLevel = "cell"; press("d-cell", ["d-grp"]); });
+  if (gl) {
+    $("v-iso").addEventListener("click", () => { gl.spin = false; gl.setInspect(-1); press("v-iso", ["v-top", "v-spin"]); });
+    $("v-top").addEventListener("click", () => { gl.spin = false; if (gl.inspK >= 0) gl.setInspect(-1); const [p, tg] = gl.TOP(); gl.goTo(p, tg); press("v-top", ["v-iso", "v-spin"]); });
+    $("v-spin").addEventListener("click", () => { gl.spin = !gl.spin; $("v-spin").setAttribute("aria-pressed", String(gl.spin)); });
+    $("ins-back").addEventListener("click", () => gl.setInspect(-1));
+    $("ins-del").addEventListener("click", () => { const k = gl.inspK; if (k >= 0) { Risc[k] = 0; meta.delete(k); } gl.setInspect(-1); });
+    const el = gl.renderer.domElement; let down = null;
+    el.addEventListener("pointerdown", ev => { down = [ev.clientX, ev.clientY]; });
+    el.addEventListener("pointerup", ev => {
+      if (!down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 5) return;
+      const k = gl.pickAt(ev); if (k < 0) return;
+      if (Risc[k] > 0) gl.setInspect(k); else addShort(k, +ui.risc.value);
+    });
+    const tip = $("tip");
+    el.addEventListener("pointermove", ev => {
+      if (ev.buttons) { tip.hidden = true; return; }
+      const k = gl.pickAt(ev); if (k < 0) { tip.hidden = true; el.style.cursor = "grab"; return; }
+      el.style.cursor = "pointer";
+      const b = box.getBoundingClientRect();
+      tip.innerHTML = `${cellName(k)}${k === NTC1 ? " · NTC 1" : k === NTC2 ? " · NTC 2" : ""}<br>surface ${Ts[k].toFixed(2)} °C · core ${Tc[k].toFixed(2)} °C` +
+        (Risc[k] > 0 ? `<br>${meta.get(k).type} short ${Risc[k]} Ω · ${shortPower(k).toFixed(2)} W<br>click to open the cell` : "<br>click to add a short");
+      tip.hidden = false;
+      tip.style.left = Math.min(ev.clientX - b.left + 14, b.width - 240) + "px"; tip.style.top = (ev.clientY - b.top + 14) + "px";
+    });
+    el.addEventListener("pointerleave", () => { tip.hidden = true; });
+  }
+  function fingerprint(r, h, kase) {
+    const zrow = { base_end: "base", lower: "base", mid: "mid", upper: "cap", cap_end: "cap" }[h];
+    let best = -1, bd = Infinity;
+    for (let i = 0; i < FP.r.length; i++) if (FP.z[i] === zrow) { const d = Math.abs(FP.r[i] - r); if (d < bd) { bd = d; best = i; } }
+    return { fth: FP[kase].th[best], ftr: FP[kase].tr[best], s: FP.s[best] };
+  }
+  function addShort(k, R) {
+    Risc[k] = R;
+    const ri = +$("sloc").value, h = $("shgt").value, kase = $("scase").value;
+    const f = fingerprint(LIB.radii[ri], h, kase);
+    meta.set(k, { R, ri, h, type: $("stype").value, w: $("sfoot").value, ton: t, dur: +$("sdur").value, steps: [], P: 0,
+                  fth: f.fth, ftr: f.ftr, s: f.s, kase });
+  }
+
+  $("note").innerHTML = SIM.note;
+  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts) }) };
+
+  // ---------------- loop
+  reset(); labels();
+  const DT = 1.0;
+  let last = performance.now(), acc = 0, lastHist = -1e9;
+  function record() {
+    let hpv = NaN; for (const k of meta.keys()) { const v = hotspot(k); if (!(v <= hpv)) hpv = v; }
+    hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: Math.max(...Ts), mc: Math.max(...Tc), hp: hpv, al: det ? det.verdict(detLevel).alarm : false });
+    if (hist.length > 900) hist.shift();
+  }
+  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (t - lastHist >= 5) { record(); lastHist = t; } }
+  // example start: a 3 ohm short in group 12, row 5
+  addShort(11 * NP + 4, 3);
+  function frame(now) {
+    const realDt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (running) {
+      acc += realDt * +ui.speed.value; let n = 0;
+      while (acc >= DT && n < 4000) {
+        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); acc -= DT; n++;
+        if (t - lastHist >= Math.max(2, +ui.speed.value / 15)) { record(); lastHist = t; }
+      }
+    }
+    draw3d(now); readouts(); drawTrend(); drawVolts();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
