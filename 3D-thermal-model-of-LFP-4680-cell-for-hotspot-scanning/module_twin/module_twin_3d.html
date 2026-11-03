@@ -48,6 +48,7 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 #viewbox canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 .viewbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
 .viewbar .grow { flex: 1; }
+.credit { position: absolute; right: 12px; bottom: 8px; font-size: 12px; color: var(--mute); pointer-events: none; z-index: 1; }
 .overlay { position: absolute; left: 12px; top: 10px; font-size: 12px; color: var(--mute); pointer-events: none; }
 #inspect { position: absolute; right: 10px; top: 10px; width: 260px; max-width: calc(100% - 20px); background: var(--panel);
   border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
@@ -63,7 +64,8 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 .ctl { display: grid; gap: 4px; }
 .ctl label { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
 .ctl label span.mono { color: var(--mute); }
-.hint { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--mute); }
+.hint { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--mute); min-height: 4.1em; border-top: 1px solid var(--line); padding-top: 6px; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .controls .ctl, .controls .row { min-width: 0; }
 .controls select { width: 100%; min-width: 0; }
 .controls { overflow-x: hidden; }
@@ -82,6 +84,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .dets .detctl { grid-column: 1 / -1; }
 @media (max-width: 760px) { .dets { grid-template-columns: 1fr; } }
 .dlabel { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--mute); font-weight: 600; }
+.det.eis.scanning { border-color: var(--ntc); } .det.eis.scanning .lamp { background: var(--ntc); }
 .det.eis.alarm { border-color: var(--eis); } .det.eis.alarm .vtext { color: var(--eis); }
 .det.eis.alarm .lamp { background: var(--eis); box-shadow: 0 0 0 6px color-mix(in srgb, var(--eis) 30%, transparent); }
 .det { margin-top: 0; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
@@ -169,6 +172,7 @@ details.about .note { margin: 6px 0 0; }
       </div>
       <div id="viewbox">
         <div class="overlay" id="ovl">coolant ribbons in blue · NTCs in orange</div>
+        <div class="credit">Designed by Remus Teodorescu - AAU</div>
         <div class="tip" id="tip" hidden></div>
         <div id="inspect" hidden>
           <h3 id="ins-title">Cell</h3>
@@ -181,14 +185,14 @@ details.about .note { margin: 6px 0 0; }
         <span class="mono" id="lgmin">25 °C</span>
         <canvas id="lgbar" width="480" height="24" aria-hidden="true"></canvas>
         <span class="mono" id="lgmax">45 °C</span>
-        <span>· red ring = soft short (truth) · red glow and pin = voltage (GRU) alarm · violet glow and diamond = impedance (EIS) alarm</span>
+        <span>· red ring = soft short (truth) · red glow and pin = group flagged by the GRU · blinking red cell and violet diamond = faulted cell named by the EIS scan</span>
       </div>
       <div class="dets">
         <section class="det idle" id="det" aria-live="polite">
           <div class="verdict">
             <div class="lamp" aria-hidden="true"></div>
             <div>
-              <div class="dlabel">Voltage detector · GRU on the NPU</div>
+              <div class="dlabel">Stage 1 · voltage GRU on the NPU, 23 groups every second</div>
               <div class="vtext" id="det-text">Not trained yet</div>
               <div class="vsub" id="det-sub"></div>
             </div>
@@ -198,18 +202,13 @@ details.about .note { margin: 6px 0 0; }
           <div class="verdict">
             <div class="lamp" aria-hidden="true"></div>
             <div>
-              <div class="dlabel">Impedance detector · BMA7418 EIS</div>
+              <div class="dlabel">Stage 2 · BMA7418 EIS scan of the 9 cells of the flagged group</div>
               <div class="vtext" id="eis-text">Not available</div>
               <div class="vsub" id="eis-sub"></div>
             </div>
           </div>
         </section>
         <div class="row detctl">
-          <span class="sub">Voltage detector inputs</span>
-          <div class="seg" role="group" aria-label="Detector level">
-            <button type="button" id="d-grp" aria-pressed="true">Group level</button>
-            <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
-          </div>
           <button type="button" id="d-ack" title="Clear the latched alarms of both detectors and let them learn a new baseline">Acknowledge &amp; re-arm both</button>
         </div>
       </div>
@@ -220,77 +219,58 @@ details.about .note { margin: 6px 0 0; }
       <div class="row">
         <button class="primary" id="play" type="button">Pause</button>
         <button id="reset" type="button">Reset</button>
-        <select id="speed" aria-label="Simulation speed">
+        <select id="speed" aria-label="Simulation speed" style="width:auto;flex:1">
           <option value="10">10× real time</option>
           <option value="30" selected>30× real time</option>
           <option value="120">120× real time</option>
           <option value="600">600× real time</option>
         </select>
       </div>
-      <div class="ctl">
-        <label for="load">Load profile</label>
-        <select id="load">
-          <option value="const" selected>Constant discharge</option>
-          <option value="drive">Drive cycle (synthetic)</option>
-          <option value="pulse">10 s pulses, 10 s rest</option>
-          <option value="rest">Rest (no current)</option>
-        </select>
+      <div class="pair">
+        <div class="ctl"><label for="load">Load</label>
+          <select id="load">
+            <option value="const">Constant</option>
+            <option value="drive">Drive cycle</option>
+            <option value="pulse">10 s pulses</option>
+            <option value="rest" selected>Parked</option>
+          </select></div>
+        <div class="ctl"><label for="crate">C-rate <span class="mono" id="crate-v"></span></label>
+          <input type="range" id="crate" min="0" max="3" step="0.1" value="1"></div>
       </div>
-      <div class="ctl">
-        <label for="crate">C-rate (peak) <span class="mono" id="crate-v"></span></label>
-        <input type="range" id="crate" min="0" max="3" step="0.1" value="1">
+      <div class="pair">
+        <div class="ctl"><label for="tin">Coolant <span class="mono" id="tin-v"></span></label><input type="range" id="tin" min="10" max="40" step="1" value="25"></div>
+        <div class="ctl"><label for="flow">Flow <span class="mono" id="flow-v"></span></label><input type="range" id="flow" min="0.5" max="12" step="0.5" value="4"></div>
       </div>
-      <div class="ctl">
-        <label for="tin">Coolant inlet <span class="mono" id="tin-v"></span></label>
-        <input type="range" id="tin" min="10" max="40" step="1" value="25">
+      <p class="label" style="margin:2px 0 0">Next short: set, then click a cell</p>
+      <div class="pair">
+        <div class="ctl"><label for="risc">Resistance</label>
+          <select id="risc">
+            <option value="1">1 Ω (11 W)</option>
+            <option value="2" selected>2 Ω (5.4 W)</option>
+            <option value="3">3 Ω (3.6 W)</option>
+            <option value="10">10 Ω (1.1 W)</option>
+            <option value="30">30 Ω (0.36 W)</option>
+            <option value="100">100 Ω (0.1 W)</option>
+            <option value="1000">1 kΩ (11 mW)</option>
+          </select></div>
+        <div class="ctl"><label for="sdur">Lasts</label>
+          <select id="sdur"><option value="1">1 s</option><option value="10">10 s</option><option value="60">1 min</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select></div>
       </div>
-      <div class="ctl">
-        <label for="flow">Coolant flow <span class="mono" id="flow-v"></span></label>
-        <input type="range" id="flow" min="0.5" max="12" step="0.5" value="4">
+      <div class="pair">
+        <div class="ctl"><label for="sloc">Depth (radius)</label>
+          <select id="sloc"><option value="0">4 mm (core)</option><option value="1">8 mm</option><option value="2" selected>12 mm (middle)</option><option value="3">16 mm</option><option value="4">20 mm</option><option value="5">22 mm (outer)</option></select></div>
+        <div class="ctl"><label for="shgt">Height</label>
+          <select id="shgt"><option value="base_end">base end</option><option value="lower">lower</option><option value="mid" selected>middle</option><option value="upper">upper</option><option value="cap_end">cap end</option></select></div>
       </div>
-      <p class="label" style="margin:4px 0 0">Next short: set it here, then click a cell</p>
-      <div class="ctl">
-        <label for="risc">Short resistance</label>
-        <select id="risc">
-          <option value="1">1 Ω (≈ 11 W, beyond soft-short scope)</option>
-          <option value="3">3 Ω (≈ 3.6 W)</option>
-          <option value="10" selected>10 Ω (≈ 1.1 W)</option>
-          <option value="30">30 Ω (≈ 0.36 W)</option>
-          <option value="100">100 Ω (≈ 0.11 W)</option>
-          <option value="1000">1 kΩ (≈ 11 mW)</option>
-        </select>
-        <p class="hint" id="h-risc"></p>
+      <div class="pair">
+        <div class="ctl"><label for="stype">Layers touching</label>
+          <select id="stype"><option value="anode–cathode">anode–cathode</option><option value="Al–anode" selected>Al foil–anode</option><option value="Cu–cathode">Cu foil–cathode</option><option value="Al–Cu">Al foil–Cu foil</option></select></div>
+        <div class="ctl"><label for="sfoot">Spot size</label>
+          <select id="sfoot"><option value="0.25">0.25 mm</option><option value="0.5">0.5 mm</option><option value="1.0" selected>1 mm</option><option value="2.0">2 mm</option><option value="4.0">4 mm</option></select></div>
       </div>
-      <div class="ctl">
-        <label for="sloc">Depth in the jelly roll (radius)</label>
-        <select id="sloc"><option value="0">r = 4 mm: innermost wraps, next to the core</option><option value="1">r = 8 mm</option><option value="2" selected>r = 12 mm: middle of the roll</option><option value="3">r = 16 mm</option><option value="4">r = 20 mm</option><option value="5">r = 22.2 mm: outermost wrap, under the can</option></select>
-        <p class="hint" id="h-sloc"></p>
-      </div>
-      <div class="ctl">
-        <label for="shgt">Position along the cell height</label>
-        <select id="shgt"><option value="base_end">near the base (negative end)</option><option value="lower">lower quarter</option><option value="mid" selected>middle</option><option value="upper">upper quarter</option><option value="cap_end">near the cap (positive end)</option></select>
-        <p class="hint" id="h-shgt"></p>
-      </div>
-      <div class="ctl">
-        <label for="stype">Which layers touch (short type)</label>
-        <select id="stype"><option value="anode–cathode">anode coating to cathode coating</option><option value="Al–anode" selected>aluminium foil to anode coating</option><option value="Cu–cathode">copper foil to cathode coating</option><option value="Al–Cu">aluminium foil to copper foil</option></select>
-        <p class="hint" id="h-stype"></p>
-      </div>
-      <div class="ctl">
-        <label for="sfoot">Size of the contact spot</label>
-        <select id="sfoot"><option value="0.25">0.25 × 0.25 mm</option><option value="0.5">0.5 × 0.5 mm</option><option value="1.0" selected>1 × 1 mm</option><option value="2.0">2 × 2 mm</option><option value="4.0">4 × 4 mm</option></select>
-        <p class="hint" id="h-sfoot"></p>
-      </div>
-      <div class="ctl">
-        <label for="scase">Current path to the tabs</label>
-        <select id="scase"><option value="B" selected>calibrated to the bench measurements</option><option value="A">teardown geometry as drawn (worst case)</option></select>
-        <p class="hint" id="h-scase"></p>
-      </div>
-      <div class="ctl">
-        <label for="sdur">How long the short lasts</label>
-        <select id="sdur"><option value="1">1 s (a flash)</option><option value="10">10 s</option><option value="60">1 min</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select>
-        <p class="hint" id="h-sdur"></p>
-      </div>
+      <div class="ctl"><label for="scase">Current path to the tabs</label>
+        <select id="scase"><option value="B" selected>calibrated to the bench</option><option value="A">teardown as drawn (worst case)</option></select></div>
+      <p class="hint" id="hint">Pick a setting to see what it means.</p>
       <div class="row">
         <button type="button" id="clear">Clear all shorts</button>
         <span class="sub mono" id="tclock">t = 0 s</span>
@@ -492,109 +472,76 @@ details.about .note { margin: 6px 0 0; }
   }
 
   // ---------------- detector (Physics AI NN), weights from training in the container
-  const EISP = {"cell": {"L": 2e-08, "Rs": 0.0025, "Ea_s": 15000.0, "Rct_a": 0.00075, "C_a": 1.1, "a_a": 0.9, "Rct_c": 0.00075, "C_c": 268.0, "a_c": 0.85, "Ea_ct": 50000.0, "sig_w": 0.0006, "Ea_w": 30000.0, "T_ref": 298.15}, "bma": {"I_exc": 5.0, "waveform": "sine", "fs": 8000.0, "d": 2.0, "sig_v": 5e-05, "lsb_v": 3e-05, "gain_v": 0.00016, "sig_i": 0.005, "gain_i": 0.001, "skew_std": 1.5e-07, "C_diff": 600000.0}, "freqs": [10.0, 100.0, 1000.0], "sigma": [0.0004987305978897691, 0.00043956748024410086, 0.00047862090582634316], "thr": 24.216940893236234, "w": [1.0, 1.0, 0.5], "n_init": 10, "tau_scans": 60, "n_smooth": 3, "scan_s": 60, "limits": "Test set, permanent shorts within 2 h: 98 % found at 0.3-3 ohm, 0 % at 3-30 ohm, 0 % at 30-300 ohm; 0.006 false alarms per module-hour."};
-    // ---------------- impedance detector (BMA7418_EIS_TWIN): one scan of all 23 groups every 60 s
-  // Same model and detector as model/eis.py (cell impedance Z(f, T, SOC), short two-port,
-  // BMA7418 measurement errors, robust cross-group detrend, per-group baseline, one-sided score).
+  const EISP = {"cell": {"L": 2e-08, "Rs": 0.0025, "Ea_s": 15000.0, "Rct_a": 0.00075, "C_a": 1.1, "a_a": 0.9, "Rct_c": 0.00075, "C_c": 268.0, "a_c": 0.85, "Ea_ct": 50000.0, "sig_w": 0.0006, "Ea_w": 30000.0, "T_ref": 298.15}, "bma": {"I_exc": 5.0, "waveform": "sine", "fs": 8000.0, "d": 2.0, "sig_v": 5e-05, "lsb_v": 3e-05, "gain_v": 0.00016, "sig_i": 0.005, "gain_i": 0.001, "skew_std": 1.5e-07, "C_diff": 600000.0}, "freqs": [10.0, 100.0, 1000.0], "sigma": [0.0004987305978897691, 0.00043956748024410086, 0.00047862090582634316], "thr": 24.216940893236234, "w": [1.0, 1.0, 0.5], "n_init": 10, "tau_scans": 60, "n_smooth": 3, "scan_s": 60, "limits": "Test set, permanent shorts within 2 h: 98 % found at 0.3-3 ohm, 0 % at 3-30 ohm, 0 % at 30-300 ohm; 0.006 false alarms per module-hour.", "cell_thr": 0.03711967678661189, "n_scan": 6, "dt_scan": 10, "cell_limits": "Test set, after a GRU alarm: right cell 96 % at 0.3-1 ohm, 95 % at 1-3 ohm, 100 % at 3-10 ohm (cell-level EIS access assumed)."};
+    // ---------------- stage 2: BMA7418 EIS scan of the 9 cells of the group the GRU flagged
+  // (model/eis_cell.py). Per cell, Z at 10 Hz and 1 kHz with the BMA7418 errors; index
+  // x = ln|Z(10 Hz)| - ln|Z(1 kHz)|, where the cell-to-cell resistance spread cancels and
+  // temperature does not: the shorted cell runs warmer, so its x is the lowest of the nine.
+  // Robust z-score against the other eight over N scans; the cell is named when z < threshold.
   function makeEIS(E) {
-    const F = E.freqs, nF = F.length, C = E.cell, B = E.bma, RG = 8.314;
+    const C = E.cell, B = E.bma, RG = 8.314, F2 = [10, 1000];
     const arr = (Ea, T) => Math.exp(Ea / RG * (1 / T - 1 / C.T_ref));
     const cmul = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
     const cdiv = (a, b) => { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; };
-    const r = mulberry(91);
-    const gv = Float64Array.from({ length: NS }, () => 1 + B.gain_v * gauss(r)), gi = 1 + B.gain_i * gauss(r);
+    const r0 = mulberry(91);
+    const gv = Float64Array.from({ length: N }, () => 1 + B.gain_v * gauss(r0)), gi = 1 + B.gain_i * gauss(r0);
     const Nsmp = Math.round(B.d * B.fs), I1 = B.I_exc * (B.waveform === "square" ? 4 / Math.PI : 1);
     const sv = Math.sqrt(B.sig_v ** 2 + B.lsb_v ** 2 / 12) * Math.sqrt(2 / Nsmp), si = B.sig_i * Math.sqrt(2 / Nsmp);
-    function zcell(f, T, soc, scale) {
+    function zcell(f, T, socv, scale) {
       const w = 2 * Math.PI * f;
-      const socf = 1 + 0.6 * Math.exp(-soc / 0.08) + 0.3 * Math.exp(-(1 - soc) / 0.05);
+      const socf = 1 + 0.6 * Math.exp(-socv / 0.08) + 0.3 * Math.exp(-(1 - socv) / 0.05);
       const act = arr(C.Ea_ct, T) * socf;
       const zarc = (R, Cc, a) => { const x = Math.pow(w * R * Cc, a); return cdiv([R, 0], [1 + x * Math.cos(a * Math.PI / 2), x * Math.sin(a * Math.PI / 2)]); };
       const za = zarc(C.Rct_a * act, C.C_a, C.a_a), zc = zarc(C.Rct_c * act, C.C_c, C.a_c);
       const zw = C.sig_w * arr(C.Ea_w, T) * socf / Math.sqrt(w);
       return [scale * (C.Rs * arr(C.Ea_s, T) + za[0] + zc[0] + zw), scale * (w * C.L + za[1] + zc[1] - zw)];
     }
-    // detrend: robust quadratic over the group index, per frequency
-    const xg = Array.from({ length: NS }, (_, g) => -1 + 2 * g / (NS - 1));
-    function quadfit(y, use) {
-      const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], v = [0, 0, 0];
-      for (let g = 0; g < NS; g++) if (use[g]) { const a = [1, xg[g], xg[g] * xg[g]]; for (let i = 0; i < 3; i++) { v[i] += a[i] * y[g]; for (let j = 0; j < 3; j++) M[i][j] += a[i] * a[j]; } }
-      for (let i = 0; i < 3; i++) { let p = i; for (let k = i + 1; k < 3; k++) if (Math.abs(M[k][i]) > Math.abs(M[p][i])) p = k; [M[i], M[p]] = [M[p], M[i]]; [v[i], v[p]] = [v[p], v[i]];
-        for (let k = i + 1; k < 3; k++) { const f = M[k][i] / M[i][i]; for (let j = i; j < 3; j++) M[k][j] -= f * M[i][j]; v[k] -= f * v[i]; } }
-      const c = [0, 0, 0]; for (let i = 2; i >= 0; i--) { let s = v[i]; for (let j = i + 1; j < 3; j++) s -= M[i][j] * c[j]; c[i] = s / M[i][i]; }
-      return y.map((yy, g) => yy - (c[0] + c[1] * xg[g] + c[2] * xg[g] * xg[g]));
-    }
-    function detrend(Zg) {                     // Zg[g][f] complex -> e[g][f]
-      const e = Array.from({ length: NS }, () => new Float64Array(nF));
-      for (let f = 0; f < nF; f++) {
-        const y = Zg.map(z => Math.log(Math.hypot(z[f][0], z[f][1])));
-        const use = Array(NS).fill(true);
-        let res = quadfit(y, use);
-        const worst = res.map((v, g) => [Math.abs(v), g]).sort((a, b) => b[0] - a[0]).slice(0, 2);
-        for (const [, g] of worst) use[g] = false;
-        res = quadfit(y, use);
-        for (let g = 0; g < NS; g++) e[g][f] = res[g];
-      }
-      return e;
-    }
-    const wsum = Math.sqrt(E.w.reduce((a, b) => a + b * b, 0));
-    const score1 = d => -d.reduce((a, v, f) => a + v / E.sigma[f] * E.w[f], 0) / wsum;
-    let hist, base, sbuf, alarm, alarmT, last, nscan, latest;
-    function reset() { hist = []; base = null; sbuf = []; alarm = new Int8Array(NS); alarmT = new Float64Array(NS).fill(NaN); last = -1e9; nscan = 0; latest = new Float64Array(NS); }
-    reset();
-    function scan(t) {
-      // ---- measurement: per cell impedance at its temperature and SOC, the short, 9p group, BMA errors
-      const Rdc = P.R0 + P.R1;
-      const Zg = [];
-      const ni = Array.from({ length: nF }, () => [si * gauss(rng), si * gauss(rng)]);
-      for (let g = 0; g < NS; g++) {
-        const row = [];
-        for (let fi = 0; fi < nF; fi++) {
-          const f = F[fi]; let Y = [0, 0];
-          for (let j = 0; j < NP; j++) {
-            const k = g * NP + j;
-            let z = zcell(f, 0.5 * (Tc[k] + Ts[k]) + 273.15, soc[k], resK[k] / P.R0);
-            if (Risc[k] > 0 && shortOn(k)) {
-              const m = meta.get(k), sh = m.ftr * (0.55 + 0.45 / (1 + f / 200));
-              const ztr = [sh * z[0], sh * z[1]], c = cdiv(cmul(ztr, ztr), [Risc[k] + m.fth * Rdc, 0]);
-              z = [z[0] - c[0], z[1] - c[1]];
-            }
-            const y = cdiv([1, 0], z); Y = [Y[0] + y[0], Y[1] + y[1]];
-          }
-          let Z = cdiv([1, 0], Y);
-          const skew = B.skew_std * gauss(rng), ph = -2 * Math.PI * f * skew;
-          Z = cmul(Z, [gv[g] / gi * Math.cos(ph), gv[g] / gi * Math.sin(ph)]);
-          const nv = [sv * gauss(rng), sv * gauss(rng)];
-          row.push(cdiv([Z[0] * I1 - nv[0], Z[1] * I1 - nv[1]], [I1 + ni[fi][0], ni[fi][1]]));
+    function measure(k) {                      // x of cell k from one scan at 10 Hz and 1 kHz
+      const Rdc = P.R0 + P.R1, mag = [];
+      for (const f of F2) {
+        let z = zcell(f, 0.5 * (Tc[k] + Ts[k]) + 273.15, soc[k], resK[k] / P.R0);
+        if (Risc[k] > 0 && shortOn(k)) {
+          const m = meta.get(k), sh = m.ftr * (0.55 + 0.45 / (1 + f / 200));
+          const c = cdiv(cmul([sh * z[0], sh * z[1]], [sh * z[0], sh * z[1]]), [Risc[k] + m.fth * Rdc, 0]);
+          z = [z[0] - c[0], z[1] - c[1]];
         }
-        Zg.push(row);
+        const ph = -2 * Math.PI * f * B.skew_std * gauss(rng);
+        z = cmul(z, [gv[k] / gi * Math.cos(ph), gv[k] / gi * Math.sin(ph)]);
+        const zm = cdiv([z[0] * I1 - sv * gauss(rng), z[1] * I1 - sv * gauss(rng)], [I1 + si * gauss(rng), si * gauss(rng)]);
+        mag.push(Math.hypot(zm[0], zm[1]));
       }
-      // ---- detector
-      const e = detrend(Zg);
-      nscan++;
-      if (nscan <= E.n_init) { hist.push(e); if (nscan === E.n_init) { base = Array.from({ length: NS }, (_, g) => Float64Array.from({ length: nF }, (_, f) => hist.reduce((a, h) => a + h[g][f], 0) / E.n_init)); for (const h of hist) sbuf.push(h.map((eg, g) => score1(eg.map((v, f) => v - base[g][f])))); } return; }
-      const s = e.map((eg, g) => score1(eg.map((v, f) => v - base[g][f])));
-      for (let g = 0; g < NS; g++) if (s[g] < 0.5 * E.thr) for (let f = 0; f < nF; f++) base[g][f] += (e[g][f] - base[g][f]) / E.tau_scans;
-      sbuf.push(s); if (sbuf.length > E.n_smooth) sbuf.splice(0, sbuf.length - E.n_smooth);
-      for (let g = 0; g < NS; g++) {
-        let m = 0; for (const b of sbuf) m += b[g]; m /= sbuf.length; latest[g] = m;
-        if (!alarm[g] && m > E.thr) { alarm[g] = 1; alarmT[g] = t; }
-      }
+      return Math.log(mag[0]) - Math.log(mag[1]);
     }
-    function observe(t) { if (t - last >= E.scan_s) { last = t; scan(t); } }
-    const flaggedGroups = () => { const o = []; for (let g = 0; g < NS; g++) if (alarm[g]) o.push(g); return o; };
+    const med = a => { const b = Array.from(a).sort((x, y) => x - y); return b.length % 2 ? b[(b.length - 1) / 2] : 0.5 * (b[b.length / 2 - 1] + b[b.length / 2]); };
+    let state, group, scans, tStart, last, result, z, nTot;
+    function reset() { state = "idle"; group = -1; scans = []; tStart = NaN; last = -1e9; result = null; z = null; nTot = 0; }
+    reset();
+    function observe(t, flaggedGroups) {
+      if (state === "idle" && flaggedGroups.length) { state = "scan"; group = flaggedGroups[0]; tStart = t; last = -1e9; scans = []; nTot = 0; }
+      if (state === "idle" || t - last < E.dt_scan) return;
+      last = t;
+      scans.push(Array.from({ length: NP }, (_, j) => measure(group * NP + j)));
+      if (scans.length > E.n_scan) scans.shift();
+      if (scans.length < E.n_scan) return;
+      const x = Array.from({ length: NP }, (_, j) => scans.reduce((a, s) => a + s[j], 0) / scans.length);
+      const m = med(x);
+      let jb = 0; for (let j = 1; j < NP; j++) if (x[j] < x[jb]) jb = j;
+      z = m - x[jb];                            // drop of the lowest cell below the group median
+      nTot++;
+      if (state === "scan" && (z > E.cell_thr || nTot >= 3 * E.n_scan))
+        { state = "found"; result = { k: group * NP + jb, z, t, sure: z > E.cell_thr }; }
+    }
+    function faultedCell() { return state === "found" ? result.k : -1; }
     function verdict() {
-      const fg = flaggedGroups();
-      if (nscan < E.n_init) return { alarm: false, text: "Learning the baseline", sub: `First ${E.n_init} scans (${E.n_init} min) set each group's reference impedance. ${E.limits}` };
-      if (!fg.length) {
-        let gm = 0; for (let g = 1; g < NS; g++) if (latest[g] > latest[gm]) gm = g;
-        return { alarm: false, text: "No short detected", sub: `Impedance scan of 23 groups at 10, 100 and 1000 Hz every minute. Highest score: group ${gm + 1}, ${latest[gm].toFixed(1)} (alarm above ${E.thr.toFixed(1)}). ${E.limits}` };
+      if (state === "idle") return { alarm: false, text: "Waiting for a GRU alarm", sub: `When the GRU flags a group, the BMA7418 scans its 9 cells at 10 Hz and 1 kHz (${E.n_scan} scans, ${E.dt_scan} s apart) and names the warmest one. ${E.cell_limits}` };
+      if (state === "scan") {
+        const zs = z !== null ? ` · warmest cell ${(100 * z).toFixed(1)} % below the group median (named above ${(100 * E.cell_thr).toFixed(1)} %, or after ${3 * E.n_scan} scans)` : ` · scan ${scans.length} of ${E.n_scan}`;
+        return { alarm: false, scanning: true, text: `Scanning the 9 cells of group ${group + 1}`, sub: `Started at t = ${fmtT(tStart)}${zs}` };
       }
-      const g = fg[0];
-      return { alarm: true, group: g, t: alarmT[g], text: `internal short in group ${g + 1}`,
-               sub: `Impedance of group ${g + 1} fell below the others (score ${latest[g].toFixed(1)}, alarm above ${E.thr.toFixed(1)}): its shorted cell runs warmer, and its charge-transfer resistance drops.` };
+      return { alarm: true, group, cell: result.k, t: result.t, text: `faulted cell: group ${group + 1}, row ${result.k % NP + 1}`,
+               sub: `${result.sure ? "Named" : "Most likely cell (below the confidence threshold)"} at t = ${fmtT(result.t)}, ${((result.t - tStart) / 60).toFixed(1)} min after the GRU alarm · its 10 Hz / 1 kHz impedance ratio is ${(100 * result.z).toFixed(1)} % below the group median: it runs warmer` };
     }
-    return { reset, observe, flaggedGroups, verdict };
+    return { reset, observe, verdict, faultedCell, flaggedGroups: () => (state === "found" ? [group] : []) };
   }
 
   const eisDet = EISP ? makeEIS(EISP) : null;
@@ -1024,12 +971,14 @@ details.about .note { margin: 6px 0 0; }
     flagged.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.halos.setMatrixAt(n, gl.M); });
     gl.halos.instanceMatrix.needsUpdate = true;
     gl.halos.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(now / 160));
-    const eg = eisDet ? eisDet.flaggedGroups() : [];
-    gl.haloE.count = eg.length * NP;
-    eg.forEach((g, n) => { for (let j = 0; j < NP; j++) { const k = g * NP + j; gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.haloE.setMatrixAt(n * NP + j, gl.M); } });
-    gl.haloE.instanceMatrix.needsUpdate = true; gl.haloE.material.opacity = 0.25 + 0.3 * (0.5 + 0.5 * Math.cos(now / 170));
+    // stage 2: the faulted cell blinks red, with a violet diamond above it
+    const kf = eisDet ? eisDet.faultedCell() : -1, eg = kf >= 0 ? [kf] : [];
+    if (kf >= 0 && Math.floor(now / 350) % 2) { gl.cells.setColorAt(kf, gl.col.setRGB(1, 0.05, 0.03)); gl.cells.instanceColor.needsUpdate = true; }
+    gl.haloE.count = eg.length;
+    eg.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.haloE.setMatrixAt(n, gl.M); });
+    gl.haloE.instanceMatrix.needsUpdate = true; gl.haloE.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.cos(now / 170));
     gl.pinsE.count = eg.length;
-    eg.forEach((g, n) => { const k = g * NP + 4; gl.M.makeTranslation(gl.px(k) + 26, HC + 32 + 6 * Math.cos(now / 250), gl.pz(k)); gl.pinsE.setMatrixAt(n, gl.M); });
+    eg.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC + 62 + 6 * Math.cos(now / 250), gl.pz(k)); gl.pinsE.setMatrixAt(n, gl.M); });
     gl.pinsE.instanceMatrix.needsUpdate = true; gl.pinsE.visible = gl.inspK < 0;
     gl.lampMat.color.setHex((flagged.length || eg.length) ? ((Math.floor(now / 300) % 2) ? 0xff2a1a : 0x7a1208) : 0x2ecc71);
     // one pin per flagged group (group level) or per flagged cell (cell level), bobbing above it
@@ -1151,8 +1100,9 @@ details.about .note { margin: 6px 0 0; }
     if (!eisDet) { box3.className = "det idle eis"; return; }
     const e = eisDet.verdict();
     box3.className = "det eis " + (e.alarm ? "alarm" : "ok");
-    $("eis-text").textContent = e.alarm ? `Alarm ${alarmId("EIS", e.group)}: ${e.text}` : e.text;
-    $("eis-sub").textContent = e.alarm ? `Detected at t = ${fmtT(e.t)}${sinceOnset(e.group, e.t)} · ${e.sub}` : e.sub;
+    box3.classList.toggle("scanning", !!e.scanning);
+    $("eis-text").textContent = e.alarm ? `Alarm ${alarmId("EIS", e.cell)}: ${e.text}` : e.text;
+    $("eis-sub").textContent = e.alarm ? `${e.sub}${meta.has(e.cell) ? " · this is the shorted cell" : " · this cell has no short (wrong cell)"}` : e.sub;
   }
   function inspectText(k) {
     const m = meta.get(k), Pk = shortPower(k);
@@ -1167,9 +1117,11 @@ details.about .note { margin: 6px 0 0; }
 
   // ---------------- controls
   const HINTS = {
+    load: { _: "How the module is used.", const: "At constant current the voltage detector is slow: its observer cannot tell a resistance change from a voltage offset when the current never changes.",
+      drive: "Varying current: the voltage detector works well.", pulse: "On-off current: the voltage detector works well.", rest: "Parked: no load, the cleanest case for both detectors (the default demo)." },
     risc: { _: "Resistance of the contact between the two electrodes. Lower resistance means more current and more heat. Soft shorts are about 1 Ω to 1 kΩ.",
-      "1": "11 W: a hard short. The twin does not model what follows (escalation), so treat it as out of scope.",
-      "3": "3.6 W: easy to detect, in minutes.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
+      "1": "11 W: a strong short, found by the GRU in about 5 min when parked or driving. What follows (escalation) is not modelled.",
+      "2": "5.4 W: the demo case. Parked, the GRU flags the group in about 8 min and the EIS scan names the cell 1-2 min later.", "3": "3.6 W: found in 10-30 min.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
       "30": "0.36 W: below the detection limit within 2 h with group voltages alone.",
       "100": "0.11 W: a slow leak, not detectable within 2 h.", "1000": "11 mW: a very slow leak, not detectable." },
     sloc: { _: "How deep inside the wound electrode the short sits.",
@@ -1189,16 +1141,14 @@ details.about .note { margin: 6px 0 0; }
     sdur: { _: "A permanent short, or one that opens again after this time, for example a dendrite that burns through.",
       "1e9": "Stays until you clear it." },
   };
-  function hints() {
-    for (const id of Object.keys(HINTS)) {
-      const el = $("h-" + id); if (!el) continue;
-      const v = $(id).value, H = HINTS[id];
-      el.textContent = H[v] ? `${H._} ${H[v]}` : H._;
-    }
+  function hints(id) {
+    if (!id) return;
+    const v = $(id).value, H = HINTS[id];
+    $("hint").textContent = H[v] ? `${H._} ${H[v]}` : H._;
   }
-  Object.keys(HINTS).forEach(id => $(id).addEventListener("change", hints));
+  Object.keys(HINTS).forEach(id => { $(id).addEventListener("change", () => hints(id)); $(id).addEventListener("focus", () => hints(id)); });
   function labels() {
-    $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C (${(+ui.crate.value * P.Q_Ah).toFixed(0)} A/cell)`;
+    $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C`;
     $("tin-v").textContent = `${ui.tin.value} °C`; $("flow-v").textContent = `${(+ui.flow.value).toFixed(1)} L/min`;
   }
   ["crate", "tin", "flow"].forEach(id => ui[id].addEventListener("input", labels));
@@ -1208,8 +1158,7 @@ details.about .note { margin: 6px 0 0; }
   const press = (on, off) => { $(on).setAttribute("aria-pressed", "true"); off.forEach(o => $(o).setAttribute("aria-pressed", "false")); };
   $("m-surf").addEventListener("click", () => { mode = "surf"; press("m-surf", ["m-core"]); });
   $("m-core").addEventListener("click", () => { mode = "core"; press("m-core", ["m-surf"]); });
-  $("d-grp").addEventListener("click", () => { detLevel = "group"; press("d-grp", ["d-cell"]); });
-  $("d-cell").addEventListener("click", () => { detLevel = "cell"; press("d-cell", ["d-grp"]); });
+
   // the alarm latches, as a BMS safety alarm would; the operator acknowledges it, and the
   // detector starts again from a fresh baseline (the charge the short took stays lost)
   $("d-ack").addEventListener("click", () => { if (det) det.reset(); if (eisDet) eisDet.reset(); alarmIds.GRU.clear(); alarmIds.EIS.clear(); for (const p of hist) { p.al = false; p.ae = false; } });
@@ -1254,7 +1203,7 @@ details.about .note { margin: 6px 0 0; }
   }
 
   $("note").innerHTML = SIM.note;
-  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts), Tc: Array.from(Tc), Timp: Array.from(Timp1), cellp: det ? det.cellp() : null }) };
+  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts), Tc: Array.from(Tc), Timp: Array.from(Timp1), cellp: det ? det.cellp() : null, shorts: [...meta.keys()], flagged: det ? det.flaggedGroups() : [] }) };
 
   // ---------------- loop
   reset(); labels(); hints();
@@ -1265,14 +1214,14 @@ details.about .note { margin: 6px 0 0; }
     hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: Math.max(...Ts), mc: Math.max(...Tc), hp: hpv, al: det ? det.verdict(detLevel).alarm : false, ae: eisDet ? eisDet.verdict().alarm : false });
     if (hist.length > 900) hist.shift();
   }
-  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t); if (t - lastHist >= 5) { record(); lastHist = t; } }
+  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t, det ? det.flaggedGroups() : []); if (t - lastHist >= 5) { record(); lastHist = t; } }
   // the module starts healthy: no short until the user clicks a cell
   function frame(now) {
     const realDt = Math.min(0.1, (now - last) / 1000); last = now;
     if (running) {
       acc += realDt * +ui.speed.value; let n = 0;
       while (acc >= DT && n < 4000) {
-        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t); acc -= DT; n++;
+        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t, det ? det.flaggedGroups() : []); acc -= DT; n++;
         if (t - lastHist >= Math.max(2, +ui.speed.value / 15)) { record(); lastHist = t; }
       }
     }

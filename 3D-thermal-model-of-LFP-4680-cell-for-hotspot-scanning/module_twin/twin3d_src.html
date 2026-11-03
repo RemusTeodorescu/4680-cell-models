@@ -45,6 +45,7 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 #viewbox canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 .viewbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
 .viewbar .grow { flex: 1; }
+.credit { position: absolute; right: 12px; bottom: 8px; font-size: 12px; color: var(--mute); pointer-events: none; z-index: 1; }
 .overlay { position: absolute; left: 12px; top: 10px; font-size: 12px; color: var(--mute); pointer-events: none; }
 #inspect { position: absolute; right: 10px; top: 10px; width: 260px; max-width: calc(100% - 20px); background: var(--panel);
   border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
@@ -60,7 +61,8 @@ h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
 .ctl { display: grid; gap: 4px; }
 .ctl label { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
 .ctl label span.mono { color: var(--mute); }
-.hint { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--mute); }
+.hint { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--mute); min-height: 4.1em; border-top: 1px solid var(--line); padding-top: 6px; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .controls .ctl, .controls .row { min-width: 0; }
 .controls select { width: 100%; min-width: 0; }
 .controls { overflow-x: hidden; }
@@ -79,6 +81,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .dets .detctl { grid-column: 1 / -1; }
 @media (max-width: 760px) { .dets { grid-template-columns: 1fr; } }
 .dlabel { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--mute); font-weight: 600; }
+.det.eis.scanning { border-color: var(--ntc); } .det.eis.scanning .lamp { background: var(--ntc); }
 .det.eis.alarm { border-color: var(--eis); } .det.eis.alarm .vtext { color: var(--eis); }
 .det.eis.alarm .lamp { background: var(--eis); box-shadow: 0 0 0 6px color-mix(in srgb, var(--eis) 30%, transparent); }
 .det { margin-top: 0; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
@@ -166,6 +169,7 @@ details.about .note { margin: 6px 0 0; }
       </div>
       <div id="viewbox">
         <div class="overlay" id="ovl">coolant ribbons in blue · NTCs in orange</div>
+        <div class="credit">Designed by Remus Teodorescu - AAU</div>
         <div class="tip" id="tip" hidden></div>
         <div id="inspect" hidden>
           <h3 id="ins-title">Cell</h3>
@@ -178,14 +182,14 @@ details.about .note { margin: 6px 0 0; }
         <span class="mono" id="lgmin">25 °C</span>
         <canvas id="lgbar" width="480" height="24" aria-hidden="true"></canvas>
         <span class="mono" id="lgmax">45 °C</span>
-        <span>· red ring = soft short (truth) · red glow and pin = voltage (GRU) alarm · violet glow and diamond = impedance (EIS) alarm</span>
+        <span>· red ring = soft short (truth) · red glow and pin = group flagged by the GRU · blinking red cell and violet diamond = faulted cell named by the EIS scan</span>
       </div>
       <div class="dets">
         <section class="det idle" id="det" aria-live="polite">
           <div class="verdict">
             <div class="lamp" aria-hidden="true"></div>
             <div>
-              <div class="dlabel">Voltage detector · GRU on the NPU</div>
+              <div class="dlabel">Stage 1 · voltage GRU on the NPU, 23 groups every second</div>
               <div class="vtext" id="det-text">Not trained yet</div>
               <div class="vsub" id="det-sub"></div>
             </div>
@@ -195,18 +199,13 @@ details.about .note { margin: 6px 0 0; }
           <div class="verdict">
             <div class="lamp" aria-hidden="true"></div>
             <div>
-              <div class="dlabel">Impedance detector · BMA7418 EIS</div>
+              <div class="dlabel">Stage 2 · BMA7418 EIS scan of the 9 cells of the flagged group</div>
               <div class="vtext" id="eis-text">Not available</div>
               <div class="vsub" id="eis-sub"></div>
             </div>
           </div>
         </section>
         <div class="row detctl">
-          <span class="sub">Voltage detector inputs</span>
-          <div class="seg" role="group" aria-label="Detector level">
-            <button type="button" id="d-grp" aria-pressed="true">Group level</button>
-            <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
-          </div>
           <button type="button" id="d-ack" title="Clear the latched alarms of both detectors and let them learn a new baseline">Acknowledge &amp; re-arm both</button>
         </div>
       </div>
@@ -217,77 +216,58 @@ details.about .note { margin: 6px 0 0; }
       <div class="row">
         <button class="primary" id="play" type="button">Pause</button>
         <button id="reset" type="button">Reset</button>
-        <select id="speed" aria-label="Simulation speed">
+        <select id="speed" aria-label="Simulation speed" style="width:auto;flex:1">
           <option value="10">10× real time</option>
           <option value="30" selected>30× real time</option>
           <option value="120">120× real time</option>
           <option value="600">600× real time</option>
         </select>
       </div>
-      <div class="ctl">
-        <label for="load">Load profile</label>
-        <select id="load">
-          <option value="const" selected>Constant discharge</option>
-          <option value="drive">Drive cycle (synthetic)</option>
-          <option value="pulse">10 s pulses, 10 s rest</option>
-          <option value="rest">Rest (no current)</option>
-        </select>
+      <div class="pair">
+        <div class="ctl"><label for="load">Load</label>
+          <select id="load">
+            <option value="const">Constant</option>
+            <option value="drive">Drive cycle</option>
+            <option value="pulse">10 s pulses</option>
+            <option value="rest" selected>Parked</option>
+          </select></div>
+        <div class="ctl"><label for="crate">C-rate <span class="mono" id="crate-v"></span></label>
+          <input type="range" id="crate" min="0" max="3" step="0.1" value="1"></div>
       </div>
-      <div class="ctl">
-        <label for="crate">C-rate (peak) <span class="mono" id="crate-v"></span></label>
-        <input type="range" id="crate" min="0" max="3" step="0.1" value="1">
+      <div class="pair">
+        <div class="ctl"><label for="tin">Coolant <span class="mono" id="tin-v"></span></label><input type="range" id="tin" min="10" max="40" step="1" value="25"></div>
+        <div class="ctl"><label for="flow">Flow <span class="mono" id="flow-v"></span></label><input type="range" id="flow" min="0.5" max="12" step="0.5" value="4"></div>
       </div>
-      <div class="ctl">
-        <label for="tin">Coolant inlet <span class="mono" id="tin-v"></span></label>
-        <input type="range" id="tin" min="10" max="40" step="1" value="25">
+      <p class="label" style="margin:2px 0 0">Next short: set, then click a cell</p>
+      <div class="pair">
+        <div class="ctl"><label for="risc">Resistance</label>
+          <select id="risc">
+            <option value="1">1 Ω (11 W)</option>
+            <option value="2" selected>2 Ω (5.4 W)</option>
+            <option value="3">3 Ω (3.6 W)</option>
+            <option value="10">10 Ω (1.1 W)</option>
+            <option value="30">30 Ω (0.36 W)</option>
+            <option value="100">100 Ω (0.1 W)</option>
+            <option value="1000">1 kΩ (11 mW)</option>
+          </select></div>
+        <div class="ctl"><label for="sdur">Lasts</label>
+          <select id="sdur"><option value="1">1 s</option><option value="10">10 s</option><option value="60">1 min</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select></div>
       </div>
-      <div class="ctl">
-        <label for="flow">Coolant flow <span class="mono" id="flow-v"></span></label>
-        <input type="range" id="flow" min="0.5" max="12" step="0.5" value="4">
+      <div class="pair">
+        <div class="ctl"><label for="sloc">Depth (radius)</label>
+          <select id="sloc"><option value="0">4 mm (core)</option><option value="1">8 mm</option><option value="2" selected>12 mm (middle)</option><option value="3">16 mm</option><option value="4">20 mm</option><option value="5">22 mm (outer)</option></select></div>
+        <div class="ctl"><label for="shgt">Height</label>
+          <select id="shgt"><option value="base_end">base end</option><option value="lower">lower</option><option value="mid" selected>middle</option><option value="upper">upper</option><option value="cap_end">cap end</option></select></div>
       </div>
-      <p class="label" style="margin:4px 0 0">Next short: set it here, then click a cell</p>
-      <div class="ctl">
-        <label for="risc">Short resistance</label>
-        <select id="risc">
-          <option value="1">1 Ω (≈ 11 W, beyond soft-short scope)</option>
-          <option value="3">3 Ω (≈ 3.6 W)</option>
-          <option value="10" selected>10 Ω (≈ 1.1 W)</option>
-          <option value="30">30 Ω (≈ 0.36 W)</option>
-          <option value="100">100 Ω (≈ 0.11 W)</option>
-          <option value="1000">1 kΩ (≈ 11 mW)</option>
-        </select>
-        <p class="hint" id="h-risc"></p>
+      <div class="pair">
+        <div class="ctl"><label for="stype">Layers touching</label>
+          <select id="stype"><option value="anode–cathode">anode–cathode</option><option value="Al–anode" selected>Al foil–anode</option><option value="Cu–cathode">Cu foil–cathode</option><option value="Al–Cu">Al foil–Cu foil</option></select></div>
+        <div class="ctl"><label for="sfoot">Spot size</label>
+          <select id="sfoot"><option value="0.25">0.25 mm</option><option value="0.5">0.5 mm</option><option value="1.0" selected>1 mm</option><option value="2.0">2 mm</option><option value="4.0">4 mm</option></select></div>
       </div>
-      <div class="ctl">
-        <label for="sloc">Depth in the jelly roll (radius)</label>
-        <select id="sloc"><option value="0">r = 4 mm: innermost wraps, next to the core</option><option value="1">r = 8 mm</option><option value="2" selected>r = 12 mm: middle of the roll</option><option value="3">r = 16 mm</option><option value="4">r = 20 mm</option><option value="5">r = 22.2 mm: outermost wrap, under the can</option></select>
-        <p class="hint" id="h-sloc"></p>
-      </div>
-      <div class="ctl">
-        <label for="shgt">Position along the cell height</label>
-        <select id="shgt"><option value="base_end">near the base (negative end)</option><option value="lower">lower quarter</option><option value="mid" selected>middle</option><option value="upper">upper quarter</option><option value="cap_end">near the cap (positive end)</option></select>
-        <p class="hint" id="h-shgt"></p>
-      </div>
-      <div class="ctl">
-        <label for="stype">Which layers touch (short type)</label>
-        <select id="stype"><option value="anode–cathode">anode coating to cathode coating</option><option value="Al–anode" selected>aluminium foil to anode coating</option><option value="Cu–cathode">copper foil to cathode coating</option><option value="Al–Cu">aluminium foil to copper foil</option></select>
-        <p class="hint" id="h-stype"></p>
-      </div>
-      <div class="ctl">
-        <label for="sfoot">Size of the contact spot</label>
-        <select id="sfoot"><option value="0.25">0.25 × 0.25 mm</option><option value="0.5">0.5 × 0.5 mm</option><option value="1.0" selected>1 × 1 mm</option><option value="2.0">2 × 2 mm</option><option value="4.0">4 × 4 mm</option></select>
-        <p class="hint" id="h-sfoot"></p>
-      </div>
-      <div class="ctl">
-        <label for="scase">Current path to the tabs</label>
-        <select id="scase"><option value="B" selected>calibrated to the bench measurements</option><option value="A">teardown geometry as drawn (worst case)</option></select>
-        <p class="hint" id="h-scase"></p>
-      </div>
-      <div class="ctl">
-        <label for="sdur">How long the short lasts</label>
-        <select id="sdur"><option value="1">1 s (a flash)</option><option value="10">10 s</option><option value="60">1 min</option><option value="600">10 min</option><option value="1e9" selected>permanent</option></select>
-        <p class="hint" id="h-sdur"></p>
-      </div>
+      <div class="ctl"><label for="scase">Current path to the tabs</label>
+        <select id="scase"><option value="B" selected>calibrated to the bench</option><option value="A">teardown as drawn (worst case)</option></select></div>
+      <p class="hint" id="hint">Pick a setting to see what it means.</p>
       <div class="row">
         <button type="button" id="clear">Clear all shorts</button>
         <span class="sub mono" id="tclock">t = 0 s</span>
@@ -767,12 +747,14 @@ details.about .note { margin: 6px 0 0; }
     flagged.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.halos.setMatrixAt(n, gl.M); });
     gl.halos.instanceMatrix.needsUpdate = true;
     gl.halos.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(now / 160));
-    const eg = eisDet ? eisDet.flaggedGroups() : [];
-    gl.haloE.count = eg.length * NP;
-    eg.forEach((g, n) => { for (let j = 0; j < NP; j++) { const k = g * NP + j; gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.haloE.setMatrixAt(n * NP + j, gl.M); } });
-    gl.haloE.instanceMatrix.needsUpdate = true; gl.haloE.material.opacity = 0.25 + 0.3 * (0.5 + 0.5 * Math.cos(now / 170));
+    // stage 2: the faulted cell blinks red, with a violet diamond above it
+    const kf = eisDet ? eisDet.faultedCell() : -1, eg = kf >= 0 ? [kf] : [];
+    if (kf >= 0 && Math.floor(now / 350) % 2) { gl.cells.setColorAt(kf, gl.col.setRGB(1, 0.05, 0.03)); gl.cells.instanceColor.needsUpdate = true; }
+    gl.haloE.count = eg.length;
+    eg.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.haloE.setMatrixAt(n, gl.M); });
+    gl.haloE.instanceMatrix.needsUpdate = true; gl.haloE.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.cos(now / 170));
     gl.pinsE.count = eg.length;
-    eg.forEach((g, n) => { const k = g * NP + 4; gl.M.makeTranslation(gl.px(k) + 26, HC + 32 + 6 * Math.cos(now / 250), gl.pz(k)); gl.pinsE.setMatrixAt(n, gl.M); });
+    eg.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC + 62 + 6 * Math.cos(now / 250), gl.pz(k)); gl.pinsE.setMatrixAt(n, gl.M); });
     gl.pinsE.instanceMatrix.needsUpdate = true; gl.pinsE.visible = gl.inspK < 0;
     gl.lampMat.color.setHex((flagged.length || eg.length) ? ((Math.floor(now / 300) % 2) ? 0xff2a1a : 0x7a1208) : 0x2ecc71);
     // one pin per flagged group (group level) or per flagged cell (cell level), bobbing above it
@@ -894,8 +876,9 @@ details.about .note { margin: 6px 0 0; }
     if (!eisDet) { box3.className = "det idle eis"; return; }
     const e = eisDet.verdict();
     box3.className = "det eis " + (e.alarm ? "alarm" : "ok");
-    $("eis-text").textContent = e.alarm ? `Alarm ${alarmId("EIS", e.group)}: ${e.text}` : e.text;
-    $("eis-sub").textContent = e.alarm ? `Detected at t = ${fmtT(e.t)}${sinceOnset(e.group, e.t)} · ${e.sub}` : e.sub;
+    box3.classList.toggle("scanning", !!e.scanning);
+    $("eis-text").textContent = e.alarm ? `Alarm ${alarmId("EIS", e.cell)}: ${e.text}` : e.text;
+    $("eis-sub").textContent = e.alarm ? `${e.sub}${meta.has(e.cell) ? " · this is the shorted cell" : " · this cell has no short (wrong cell)"}` : e.sub;
   }
   function inspectText(k) {
     const m = meta.get(k), Pk = shortPower(k);
@@ -910,9 +893,11 @@ details.about .note { margin: 6px 0 0; }
 
   // ---------------- controls
   const HINTS = {
+    load: { _: "How the module is used.", const: "At constant current the voltage detector is slow: its observer cannot tell a resistance change from a voltage offset when the current never changes.",
+      drive: "Varying current: the voltage detector works well.", pulse: "On-off current: the voltage detector works well.", rest: "Parked: no load, the cleanest case for both detectors (the default demo)." },
     risc: { _: "Resistance of the contact between the two electrodes. Lower resistance means more current and more heat. Soft shorts are about 1 Ω to 1 kΩ.",
-      "1": "11 W: a hard short. The twin does not model what follows (escalation), so treat it as out of scope.",
-      "3": "3.6 W: easy to detect, in minutes.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
+      "1": "11 W: a strong short, found by the GRU in about 5 min when parked or driving. What follows (escalation) is not modelled.",
+      "2": "5.4 W: the demo case. Parked, the GRU flags the group in about 8 min and the EIS scan names the cell 1-2 min later.", "3": "3.6 W: found in 10-30 min.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
       "30": "0.36 W: below the detection limit within 2 h with group voltages alone.",
       "100": "0.11 W: a slow leak, not detectable within 2 h.", "1000": "11 mW: a very slow leak, not detectable." },
     sloc: { _: "How deep inside the wound electrode the short sits.",
@@ -932,16 +917,14 @@ details.about .note { margin: 6px 0 0; }
     sdur: { _: "A permanent short, or one that opens again after this time, for example a dendrite that burns through.",
       "1e9": "Stays until you clear it." },
   };
-  function hints() {
-    for (const id of Object.keys(HINTS)) {
-      const el = $("h-" + id); if (!el) continue;
-      const v = $(id).value, H = HINTS[id];
-      el.textContent = H[v] ? `${H._} ${H[v]}` : H._;
-    }
+  function hints(id) {
+    if (!id) return;
+    const v = $(id).value, H = HINTS[id];
+    $("hint").textContent = H[v] ? `${H._} ${H[v]}` : H._;
   }
-  Object.keys(HINTS).forEach(id => $(id).addEventListener("change", hints));
+  Object.keys(HINTS).forEach(id => { $(id).addEventListener("change", () => hints(id)); $(id).addEventListener("focus", () => hints(id)); });
   function labels() {
-    $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C (${(+ui.crate.value * P.Q_Ah).toFixed(0)} A/cell)`;
+    $("crate-v").textContent = `${(+ui.crate.value).toFixed(1)} C`;
     $("tin-v").textContent = `${ui.tin.value} °C`; $("flow-v").textContent = `${(+ui.flow.value).toFixed(1)} L/min`;
   }
   ["crate", "tin", "flow"].forEach(id => ui[id].addEventListener("input", labels));
@@ -951,8 +934,7 @@ details.about .note { margin: 6px 0 0; }
   const press = (on, off) => { $(on).setAttribute("aria-pressed", "true"); off.forEach(o => $(o).setAttribute("aria-pressed", "false")); };
   $("m-surf").addEventListener("click", () => { mode = "surf"; press("m-surf", ["m-core"]); });
   $("m-core").addEventListener("click", () => { mode = "core"; press("m-core", ["m-surf"]); });
-  $("d-grp").addEventListener("click", () => { detLevel = "group"; press("d-grp", ["d-cell"]); });
-  $("d-cell").addEventListener("click", () => { detLevel = "cell"; press("d-cell", ["d-grp"]); });
+
   // the alarm latches, as a BMS safety alarm would; the operator acknowledges it, and the
   // detector starts again from a fresh baseline (the charge the short took stays lost)
   $("d-ack").addEventListener("click", () => { if (det) det.reset(); if (eisDet) eisDet.reset(); alarmIds.GRU.clear(); alarmIds.EIS.clear(); for (const p of hist) { p.al = false; p.ae = false; } });
@@ -997,7 +979,7 @@ details.about .note { margin: 6px 0 0; }
   }
 
   $("note").innerHTML = SIM.note;
-  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts), Tc: Array.from(Tc), Timp: Array.from(Timp1), cellp: det ? det.cellp() : null }) };
+  window.__twin = { inspect: k => gl && gl.setInspect(k), addShort: (k, R) => addShort(k, R), state: () => ({ t, Vmeas: Array.from(Vmeas), Ts: Array.from(Ts), Tc: Array.from(Tc), Timp: Array.from(Timp1), cellp: det ? det.cellp() : null, shorts: [...meta.keys()], flagged: det ? det.flaggedGroups() : [] }) };
 
   // ---------------- loop
   reset(); labels(); hints();
@@ -1008,14 +990,14 @@ details.about .note { margin: 6px 0 0; }
     hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: Math.max(...Ts), mc: Math.max(...Tc), hp: hpv, al: det ? det.verdict(detLevel).alarm : false, ae: eisDet ? eisDet.verdict().alarm : false });
     if (hist.length > 900) hist.shift();
   }
-  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t); if (t - lastHist >= 5) { record(); lastHist = t; } }
+  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t, det ? det.flaggedGroups() : []); if (t - lastHist >= 5) { record(); lastHist = t; } }
   // the module starts healthy: no short until the user clicks a cell
   function frame(now) {
     const realDt = Math.min(0.1, (now - last) / 1000); last = now;
     if (running) {
       acc += realDt * +ui.speed.value; let n = 0;
       while (acc >= DT && n < 4000) {
-        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t); acc -= DT; n++;
+        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t, det ? det.flaggedGroups() : []); acc -= DT; n++;
         if (t - lastHist >= Math.max(2, +ui.speed.value / 15)) { record(); lastHist = t; }
       }
     }
