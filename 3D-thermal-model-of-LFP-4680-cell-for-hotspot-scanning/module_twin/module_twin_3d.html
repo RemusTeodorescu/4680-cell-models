@@ -214,6 +214,7 @@ details.about .note { margin: 6px 0 0; }
         </section>
         <div class="row detctl">
           <button type="button" id="d-ack" title="Clear the latched alarms of both detectors and let them learn a new baseline">Acknowledge &amp; re-arm both</button>
+          <button type="button" id="d-snd" aria-pressed="true" title="Alarm siren when the GRU detects a short">Sound: on</button>
         </div>
       </div>
     </section>
@@ -1104,10 +1105,36 @@ details.about .note { margin: 6px 0 0; }
     detReadout();
     return { ms: Ts[ks], mc: Tc[kc], hp: hk >= 0 ? hp : NaN };
   }
+  // ---------------- alarm siren (Web Audio; browsers allow sound only after the viewer has clicked the page)
+  let actx = null, soundOn = true, sirenUntil = 0, nextBeep = Infinity;
+  const unlockAudio = () => { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) { actx = null; } };
+  window.addEventListener("pointerdown", unlockAudio);
+  window.addEventListener("keydown", unlockAudio);
+  function tone(f0, f1, dur, at, vol) {
+    if (!actx) return;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sawtooth"; o.frequency.setValueAtTime(f0, at); o.frequency.linearRampToValueAtTime(f1, at + dur);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.02); g.gain.setValueAtTime(vol, at + dur - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g).connect(actx.destination); o.start(at); o.stop(at + dur + 0.02);
+  }
+  function siren() {                          // 4 s two-tone siren
+    if (!soundOn || !actx) return;
+    const t0 = actx.currentTime + 0.02;
+    for (let i = 0; i < 8; i++) { tone(i % 2 ? 660 : 990, i % 2 ? 990 : 660, 0.5, t0 + i * 0.5, 0.35); }
+  }
+  function reminderBeep() { if (!soundOn || !actx) return; const t0 = actx.currentTime + 0.02; tone(990, 990, 0.18, t0, 0.3); tone(990, 990, 0.18, t0 + 0.3, 0.3); }
+  function soundTick() {                      // repeat a short double beep every 15 s until the alarm is acknowledged
+    const now = performance.now();
+    if (now >= nextBeep) { reminderBeep(); nextBeep = now + 15000; }
+  }
+
   // alarm register: every new group alarm gets its own ID per detector (GRU-001, EIS-001, ...)
   const alarmIds = { GRU: new Map(), EIS: new Map() }, alarmCount = { GRU: 0, EIS: 0 };
   function alarmId(src, g) {
-    if (!alarmIds[src].has(g)) alarmIds[src].set(g, `${src}-${String(++alarmCount[src]).padStart(3, "0")}`);
+    if (!alarmIds[src].has(g)) {
+      alarmIds[src].set(g, `${src}-${String(++alarmCount[src]).padStart(3, "0")}`);
+      if (src === "GRU") { siren(); nextBeep = performance.now() + 15000; }
+    }
     return alarmIds[src].get(g);
   }
   function sinceOnset(g, tAl) {                 // the twin knows the truth; the detectors do not
@@ -1181,7 +1208,7 @@ details.about .note { margin: 6px 0 0; }
   }
   ["crate", "tin", "flow"].forEach(id => ui[id].addEventListener("input", labels));
   $("play").addEventListener("click", () => { running = !running; $("play").textContent = running ? "Pause" : "Run"; });
-  $("reset").addEventListener("click", () => reset());
+  $("reset").addEventListener("click", () => { reset(); nextBeep = Infinity; alarmIds.GRU.clear(); alarmIds.EIS.clear(); });
   $("clear").addEventListener("click", () => { Risc.fill(0); meta.clear(); if (gl) gl.setInspect(-1); });
   const press = (on, off) => { $(on).setAttribute("aria-pressed", "true"); off.forEach(o => $(o).setAttribute("aria-pressed", "false")); };
   $("m-surf").addEventListener("click", () => { mode = "surf"; press("m-surf", ["m-core"]); });
@@ -1189,7 +1216,8 @@ details.about .note { margin: 6px 0 0; }
 
   // the alarm latches, as a BMS safety alarm would; the operator acknowledges it, and the
   // detector starts again from a fresh baseline (the charge the short took stays lost)
-  $("d-ack").addEventListener("click", () => { if (det) det.reset(); if (eisDet) eisDet.reset(); alarmIds.GRU.clear(); alarmIds.EIS.clear(); for (const p of hist) { p.al = false; p.ae = false; } });
+  $("d-snd").addEventListener("click", () => { soundOn = !soundOn; $("d-snd").textContent = "Sound: " + (soundOn ? "on" : "off"); $("d-snd").setAttribute("aria-pressed", String(soundOn)); });
+  $("d-ack").addEventListener("click", () => { nextBeep = Infinity; if (det) det.reset(); if (eisDet) eisDet.reset(); alarmIds.GRU.clear(); alarmIds.EIS.clear(); for (const p of hist) { p.al = false; p.ae = false; } });
   if (gl) {
     $("v-iso").addEventListener("click", () => { gl.spin = false; gl.setInspect(-1); press("v-iso", ["v-top", "v-spin"]); });
     $("v-top").addEventListener("click", () => { gl.spin = false; if (gl.inspK >= 0) gl.setInspect(-1); const [p, tg] = gl.TOP(); gl.goTo(p, tg); press("v-top", ["v-iso", "v-spin"]); });
@@ -1253,7 +1281,7 @@ details.about .note { margin: 6px 0 0; }
         if (t - lastHist >= Math.max(2, +ui.speed.value / 15)) { record(); lastHist = t; }
       }
     }
-    draw3d(now); readouts(); drawTrend(); drawVolts();
+    draw3d(now); readouts(); drawTrend(); drawVolts(); soundTick();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
