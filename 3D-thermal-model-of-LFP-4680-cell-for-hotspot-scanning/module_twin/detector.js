@@ -1,9 +1,14 @@
-  // Stage-1 detector (train_det.py). One observer per group on the M7 every second feeds two GRUs:
-  // the fast path every second (rls_features_1hz) and the slow path on 10 s means (rls_features).
-  // Alarm when either path fires. The cell-level GRU runs every second on the impedance temperatures.
+  // Stage-1 detector. One observer per group on the M7 every second.
+  // version "tworate" (train_mr.py): ONE two-rate GRU. Its slow cell steps every 10 s on 10 s means of the
+  // observer (low noise, long memory); its fast cell steps every second on the 1 Hz observer features plus
+  // the last slow state; one head, one alarm rule.
+  // version "combined" (train_det.py): two separate GRUs (fast 1 Hz, slow 10 s), alarm when either fires.
+  // The cell-level GRU runs every second on the impedance temperatures.
   // On the S32K5: observer, features and alarm logic on the M7; the GRU steps on the NPU.
   function makeDetector(NNW) {
-    const G = NNW.fast, SL = NNW.slow, C = NNW.cell, CAP = NP * P.Q_Ah;
+    const TW = NNW.version === "tworate";
+    const G = TW ? { params: NNW.fast, thr: NNW.thr, k_consec: NNW.k_consec } : NNW.fast;
+    const SL = TW ? { params: NNW.slow, w10: NNW.w10 } : NNW.slow, C = NNW.cell, CAP = NP * P.Q_Ah;
     function gru(p) {
       const H = p.Wh.length, F = p.Wx.length, O = p.bo.length;
       return {
@@ -66,15 +71,7 @@
       const d1 = c.map((v, g) => v - c1[g]), d2 = c.map((v, g) => v - c2[g]);
       const m1 = med(d1), m2 = med(d2), m3 = med(e), m6 = med(d1.map(Math.abs)), m7 = med(e.map(Math.abs));
       const dIc = Iprev === null ? 0 : Ic - Iprev; Iprev = Ic;
-      // ---- NPU: GRU step for the 23 groups
-      for (let g = 0; g < NS; g++) {
-        hG[g] = gg.step(hG[g], [cl(d1[g] - m1, 30), cl(d2[g] - m2, 30), cl(e[g] - m3, 30), cl(Math.abs(Ic), 30), cl(dIc, 30), cl(m6, 30), cl(m7, 30)]);
-        const o = gg.out(hG[g]);
-        pG[g] = 1 / (1 + Math.exp(-o[0])); if (!(Rg[g] > 0)) Rg[g] = Math.pow(10, o[1]);
-        run[g] = pG[g] > G.thr ? run[g] + 1 : 0;
-        if (!alarmG[g] && run[g] >= G.k_consec) { alarmG[g] = 1; alarmT[g] = t; byG[g] = "fast path"; }
-      }
-      // ---- slow path: 10 s means of the observer, GRU step every 10 s
+      // ---- slow cell/path: 10 s means of the observer, GRU step every 10 s (before the fast step: its state is used now)
       for (let g = 0; g < NS; g++) { cacc[g] += c[g] / W10; eacc[g] += e[g] / W10; }
       iacc += Math.abs(Ic) / W10;
       if (++n1 === W10) {
@@ -88,11 +85,21 @@
         for (let g = 0; g < NS; g++) {
           hS[g] = gs.step(hS[g], [cl(e1[g] - q1, 30), cl(e2[g] - q2, 30), cl(eacc[g] - q3, 30), cl(iacc, 30), cl(q5, 30)]);
           const o = gs.out(hS[g]);
-          pS[g] = 1 / (1 + Math.exp(-o[0])); Rg[g] = Math.pow(10, o[1]);
+          pS[g] = 1 / (1 + Math.exp(-o[0])); if (TW) continue;
+          Rg[g] = Math.pow(10, o[1]);
           runS[g] = pS[g] > SL.thr ? runS[g] + 1 : 0;
           if (!alarmG[g] && runS[g] >= SL.k_consec) { alarmG[g] = 1; alarmT[g] = t; byG[g] = "slow path"; }
         }
         cacc.fill(0); eacc.fill(0); iacc = 0; n1 = 0; nS++;
+      }
+      // ---- NPU: GRU step for the 23 groups
+      for (let g = 0; g < NS; g++) {
+        const xf = [cl(d1[g] - m1, 30), cl(d2[g] - m2, 30), cl(e[g] - m3, 30), cl(Math.abs(Ic), 30), cl(dIc, 30), cl(m6, 30), cl(m7, 30)];
+        hG[g] = gg.step(hG[g], TW ? xf.concat(Array.from(hS[g])) : xf);
+        const o = gg.out(hG[g]);
+        pG[g] = 1 / (1 + Math.exp(-o[0])); if (TW || !(Rg[g] > 0)) Rg[g] = Math.pow(10, o[1]);
+        run[g] = pG[g] > G.thr ? run[g] + 1 : 0;
+        if (!alarmG[g] && run[g] >= G.k_consec) { alarmG[g] = 1; alarmT[g] = t; byG[g] = TW ? "two-rate GRU" : "fast path"; }
       }
       // ---- M7: impedance temperature, 10 s moving mean minus the group mean, change over 60 s
       Tbuf.push(Float64Array.from(Timp)); if (Tbuf.length > 10) Tbuf.shift();
@@ -135,8 +142,9 @@
     function verdict(level) {
       const fg = flaggedGroups();
       if (!fg.length) {
-        let gmax = 0; for (let g = 1; g < NS; g++) if (Math.max(pG[g], pS[g]) > Math.max(pG[gmax], pS[gmax])) gmax = g;
-        return { alarm: false, text: "No short detected", sub: `Scanning 23 groups and 207 cells every second (fast path) and on 10 s means (slow path). Highest short probability: group ${gmax + 1}, ${(100 * Math.max(pG[gmax], pS[gmax])).toFixed(0)} %. ${NNW.limits}` };
+        const pm = g => (TW ? pG[g] : Math.max(pG[g], pS[g]));
+        let gmax = 0; for (let g = 1; g < NS; g++) if (pm(g) > pm(gmax)) gmax = g;
+        return { alarm: false, text: "No short detected", sub: `Scanning 23 groups and 207 cells every second${TW ? " with one two-rate GRU (1 s and 10 s clocks)" : " (fast path) and on 10 s means (slow path)"}. Highest short probability: group ${gmax + 1}, ${(100 * pm(gmax)).toFixed(0)} %. ${NNW.limits}` };
       }
       const g = fg[0], R = Rg[g], Pw = Math.pow(P.V_nom, 2) / R, b = bestCell(g);
       let where = `group ${g + 1} (one of its 9 cells)`;

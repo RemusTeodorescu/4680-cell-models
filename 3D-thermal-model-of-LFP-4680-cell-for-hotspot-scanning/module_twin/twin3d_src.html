@@ -280,7 +280,7 @@ details.about .note { margin: 6px 0 0; }
       <div class="desc">
         <p><b>Module:</b> 23 × 9p BYD 4680 LFP cells; each cell has OCV, R + RC, and core/can temperatures.</p>
         <p><b>Short:</b> a resistance inside one cell; drains and heats it. Terminal signal by position from the 3-D sheet model; hotspot from the 3-D library.</p>
-        <p><b>Stage 1, GRU:</b> per group, an observer splits load voltage from a slow offset; a GRU on the NPU flags the group losing charge (every second).</p>
+        <p><b>Stage 1, GRU:</b> per group, an observer splits load voltage from a slow offset; one two-rate GRU on the NPU (1 s and 10 s clocks) flags the group losing charge.</p>
         <p><b>Stage 2, EIS:</b> after a GRU alarm, the BMA7418 scans the group's 9 cells at 10 Hz and 1 kHz; the warmest (lowest ratio) is named.</p>
       </div>
     </aside>
@@ -925,7 +925,7 @@ details.about .note { margin: 6px 0 0; }
       box2.className = "det " + (v.alarm ? "alarm" : "ok");
       const fg = det.flaggedGroups();
       $("det-text").textContent = v.alarm ? `Alarm ${alarmId("GRU", fg[0])}: ${v.text.replace(/^ALARM: /, "")}` : v.text;
-      $("det-sub").textContent = v.alarm ? v.sub.replace(/^(Detected at t = [^·]*?)( by the [a-z]+ path)/, (m0, a1, a2) => a1.trim() + a2 + sinceOnset(v.group, v.t)) : v.sub;
+      $("det-sub").textContent = v.alarm ? v.sub.replace(/^(Detected at t = [^·]*?)( by the (?:[a-z]+ path|two-rate GRU))/, (m0, a1, a2) => a1.trim() + a2 + sinceOnset(v.group, v.t)) : v.sub;
     }
     const box3 = $("det-eis");
     if (!eisDet) { box3.className = "det idle eis"; return; }
@@ -951,8 +951,8 @@ details.about .note { margin: 6px 0 0; }
     load: { _: "How the module is used.", const: "At constant current the voltage detector is slow: its observer cannot tell a resistance change from a voltage offset when the current never changes.",
       drive: "Varying current: the voltage detector works well.", pulse: "On-off current: the voltage detector works well.", rest: "Parked: no load, the cleanest case for both detectors (the default demo)." },
     risc: { _: "Resistance of the contact between the two electrodes. Lower resistance means more current and more heat. Soft shorts are about 1 Ω to 1 kΩ.",
-      "1": "11 W: a strong short, found by the GRU in about 5 min when parked or driving. What follows (escalation) is not modelled.",
-      "2": "5.4 W: the demo case. Parked, the GRU flags the group in about 8 min and the EIS scan names the cell 1-2 min later.", "3": "3.6 W: found in 10-30 min.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
+      "1": "11 W: a strong short, found by the GRU in 1-2 min when parked or driving. What follows (escalation) is not modelled.",
+      "2": "5.4 W: the demo case. Parked, the GRU flags the group in about 2 min and the EIS scan names the cell a few minutes later.", "3": "3.6 W: found in about 5-30 min.", "10": "1.1 W: at the limit of what the group voltages show within 2 h.",
       "30": "0.36 W: below the detection limit within 2 h with group voltages alone.",
       "100": "0.11 W: a slow leak, not detectable within 2 h.", "1000": "11 mW: a very slow leak, not detectable." },
     sloc: { _: "How deep inside the wound electrode the short sits.",
