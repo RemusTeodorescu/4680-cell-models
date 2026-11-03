@@ -181,7 +181,7 @@ def short_on(sc, ti):
 
 
 # ------------------------------------------------------------------ simulation
-def simulate(sc, rng, record_every=1, timp_every=10, keep_groups=None):
+def simulate(sc, rng, record_every=1, timp_every=10, keep_groups=None, state_every=None):
     """Run the batch. Returns measurements at 1/(record_every*dt) Hz and the truth."""
     B, nt = sc["I"].shape
     dt = sc["dt"]
@@ -207,6 +207,8 @@ def simulate(sc, rng, record_every=1, timp_every=10, keep_groups=None):
     Vg_rec = np.zeros((B, nrec, NS)); I_rec = np.zeros((B, nrec)); ntc_rec = np.zeros((B, nrec, 2))
     timp_rec = np.zeros((B, nrec // timp_every, N), np.float32); acc_T = np.zeros((B, N)); isc_rec = np.zeros((B, nrec)); Psc_rec = np.zeros((B, nrec))
     timp1 = np.zeros((B, nrec, keep_groups.shape[1], NP), np.float16) if keep_groups is not None else None
+    nst = nt // state_every if state_every else 0
+    Tst = np.zeros((B, nst, N), np.float32); Sst = np.zeros((B, nst, N), np.float32); Ist = np.zeros((B, nst), np.float32)
     acc_V = np.zeros((B, NS)); acc_I = np.zeros(B); acc_isc = np.zeros(B); acc_P = np.zeros(B)
     for n in range(nt):
         ti = sc["t"][n]
@@ -243,6 +245,9 @@ def simulate(sc, rng, record_every=1, timp_every=10, keep_groups=None):
         # measurements
         Vm = np.round((V + P["v_noise"] * rng.standard_normal((B, NS))) / P["v_lsb"]) * P["v_lsb"]
         acc_V += Vm; acc_I += Im; acc_isc += Isc.sum(1); acc_P += (Isc * Isc * np.where(np.isfinite(Rsc), Rsc, 0.0)).sum(1)
+        if state_every and (n + 1) % state_every == 0 and (n + 1) // state_every - 1 < nst:
+            j = (n + 1) // state_every - 1
+            Tst[:, j] = 0.5 * (Tc + Ts); Sst[:, j] = soc; Ist[:, j] = Im
         if (n + 1) % record_every == 0:
             m = (n + 1) // record_every - 1
             Vg_rec[:, m] = acc_V / record_every; I_rec[:, m] = acc_I / record_every
@@ -258,7 +263,7 @@ def simulate(sc, rng, record_every=1, timp_every=10, keep_groups=None):
             if (m + 1) % timp_every == 0 and (m + 1) // timp_every - 1 < timp_rec.shape[1]:
                 timp_rec[:, (m + 1) // timp_every - 1] = acc_T / timp_every; acc_T[:] = 0
             acc_V[:] = 0; acc_I[:] = 0; acc_isc[:] = 0; acc_P[:] = 0
-    return dict(Vg=Vg_rec, I=I_rec, ntc=ntc_rec, timp=timp_rec, isc=isc_rec, Psc=Psc_rec, timp1=timp1,
+    return dict(Vg=Vg_rec, I=I_rec, ntc=ntc_rec, timp=timp_rec, isc=isc_rec, Psc=Psc_rec, timp1=timp1, T_state=Tst, soc_state=Sst, I_state=Ist,
                 t=(np.arange(nrec) + 1) * record_every * dt)
 
 

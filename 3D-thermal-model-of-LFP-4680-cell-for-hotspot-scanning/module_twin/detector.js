@@ -142,7 +142,7 @@
       let where = `group ${g + 1} (one of its 9 cells)`;
       if (level === "cell") where = b.p >= C.p_min ? `cell: group ${g + 1}, row ${b.k % NP + 1} (probability ${(100 * b.p).toFixed(0)} %, chance 11 %)` : `group ${g + 1}; cell not resolved yet (best ${(100 * b.p).toFixed(0)} %, chance 11 %)`;
       const worst = worstInside(Pw, tNow - alarmT[g]);
-      return { alarm: true, text: `ALARM: internal short in ${where}`,
+      return { alarm: true, group: g, t: alarmT[g], text: `ALARM: internal short in ${where}`,
         sub: `Detected at t = ${fmtT(alarmT[g])} by the ${byG[g]} · estimated R ≈ ${R < 10 ? R.toFixed(1) : R.toFixed(0)} Ω (within a factor of ~2; ≈ ${Pw.toFixed(1)} W) · ` +
              (R < 1 ? "estimate below 1 Ω: may be beyond soft-short scope" : `worst case inside ≈ ${worst.toFixed(0)} K above the can (3-D library, 1 mm short, linear upper bound)`) +
              (fg.length > 1 ? ` · ${fg.length} groups flagged` : "") + " · next step: 1 kHz impedance scan of the suspect cell" };

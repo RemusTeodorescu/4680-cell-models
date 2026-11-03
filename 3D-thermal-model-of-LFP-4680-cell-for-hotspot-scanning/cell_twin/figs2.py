@@ -183,3 +183,34 @@ def fig_detector():
     fig.tight_layout()
     fig.savefig(FIG / "fig_detector.pdf"); fig.savefig(FIG / "fig_detector.png", dpi=200)
     plt.close(fig)
+
+
+def fig_gru_vs_eis():
+    E = json.loads((OUT / "eis_eval.json").read_text())
+    C = json.loads((OUT / "det_eval_combined.json").read_text())
+    rows = E["rows"]
+    bins = np.array([0.3, 1, 3, 10, 30, 100, 3000]); mid = np.sqrt(bins[:-1] * bins[1:])
+    fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.7))
+    for j, (kind, sel) in enumerate((("permanent", lambda r: r["dur"] > 1e8), ("transient", lambda r: r["dur"] < 1e8))):
+        for key, lab, c in (("gru", "voltage GRU", "#c0392b"), ("eis", "BMA7418 EIS", "#7b3fc4"), ("either", "either", "#1c2126")):
+            v = []
+            for lo, hi in zip(bins[:-1], bins[1:]):
+                rr = [r for r in rows if lo <= r["R"] < hi and sel(r)]
+                v.append(100 * np.mean([(r["gru"] or r["eis"]) if key == "either" else r[key] for r in rr]) if rr else np.nan)
+            axs[j].semilogx(mid, v, marker="o", color=c, ms=3.5, lw=1.4 if key != "either" else 0.9, ls="-" if key != "either" else "--", label=lab)
+        axs[j].set_title(f"({'ab'[j]}) found within 2 h, {kind} shorts"); axs[j].set_ylim(-3, 103)
+        axs[j].set_xlabel(r"short resistance [$\Omega$]"); axs[j].grid(alpha=0.3, which="both")
+    axs[0].set_ylabel("% of shorts"); axs[0].legend(frameon=False, fontsize=6)
+    ax = axs[2]
+    for key, dk, lab, c in (("gru", "gru_delay", "voltage GRU", "#c0392b"), ("eis", "eis_delay", "BMA7418 EIS", "#7b3fc4")):
+        v = []
+        for lo, hi in zip(bins[:-1], bins[1:]):
+            rr = [r[dk] for r in rows if lo <= r["R"] < hi and r["dur"] > 1e8 and r[key]]
+            v.append(np.median(rr) / 60 if rr else np.nan)
+        ax.semilogx(mid, v, "o-", color=c, ms=3.5, label=lab)
+    ax.set_xlim(0.4, 2000); ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.set_title("(c) median delay, permanent"); ax.set_xlabel(r"short resistance [$\Omega$]"); ax.set_ylabel("minutes"); ax.grid(alpha=0.3, which="both")
+    fig.suptitle(f"Same 512 test scenarios. False alarms per module-hour: GRU {C['fa_per_module_hour_test']:.3f}, EIS {E['fa_test']:.3f}", fontsize=7.5, y=1.02)
+    fig.tight_layout()
+    fig.savefig(FIG / "fig_gru_vs_eis.pdf"); fig.savefig(FIG / "fig_gru_vs_eis.png", dpi=200)
+    plt.close(fig)

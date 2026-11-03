@@ -38,6 +38,9 @@ for case, key in (("A_literal", "A"), ("B_calibrated", "B")):
     C = F["cases"][case]; Zc = C["Z_cell"][0][0]
     FP[key] = dict(th=[round(C["Z_th"][0][0][i] / Zc, 4) for i in sel], tr=[round(C["Z_tr"][0][0][i] / Zc, 4) for i in sel])
 src = src.replace("/*FP*/null", json.dumps(FP, separators=(",", ":")))
+EIS_P = HERE / "eis_params.json"
+src = src.replace("/*EISP*/null", EIS_P.read_text() if EIS_P.exists() else "null")
+src = src.replace("/*EIS*/", (HERE / "eis.js").read_text() if EIS_P.exists() else "function makeEIS() { return null; }")
 src = src.replace("/*NN*/null", json.dumps(NN, separators=(",", ":")) if NN else "null")
 src = src.replace("/*DETECTOR*/", DET_JS.read_text() if (NN and DET_JS.exists()) else "function makeDetector() { return null; }")
 (HERE / "module_twin_3d.html").write_text(src)

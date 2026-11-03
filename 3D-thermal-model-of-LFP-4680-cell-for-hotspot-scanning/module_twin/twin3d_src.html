@@ -9,7 +9,7 @@
 /* An instrument panel: the 3-D module first and widest, controls beside it, the detector verdict right under it, traces below. */
 :root {
   --bg: #f3f4f2; --panel: #ffffff; --ink: #1c2126; --mute: #5b6570; --line: #d9ddd8;
-  --accent: #1f6fb2; --warn: #c0392b; --ntc: #cf6a2b; --ok: #2e8b62; --housing: #e9ebe7;
+  --accent: #1f6fb2; --warn: #c0392b; --ntc: #cf6a2b; --ok: #2e8b62; --housing: #e9ebe7; --eis: #7b3fc4;
   --view-bg: #eef0ec;
   --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -17,13 +17,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #111518; --panel: #192026; --ink: #e5e9ec; --mute: #9aa6b1; --line: #2b343c;
-    --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795; --housing: #1f272e;
+    --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795; --housing: #1f272e; --eis: #b48cf0;
     --view-bg: #141a1f; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #111518; --panel: #192026; --ink: #e5e9ec; --mute: #9aa6b1; --line: #2b343c;
-  --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795; --housing: #1f272e;
+  --accent: #5aa7e6; --warn: #ef6b5b; --ntc: #f0935a; --ok: #5cc795; --housing: #1f272e; --eis: #b48cf0;
   --view-bg: #141a1f; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -75,7 +75,13 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .seg button { border: 0; border-radius: 0; background: transparent; padding: 6px 10px; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 /* detector */
-.det { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
+.dets { margin-top: 12px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.dets .detctl { grid-column: 1 / -1; }
+@media (max-width: 760px) { .dets { grid-template-columns: 1fr; } }
+.dlabel { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--mute); font-weight: 600; }
+.det.eis.alarm { border-color: var(--eis); } .det.eis.alarm .vtext { color: var(--eis); }
+.det.eis.alarm .lamp { background: var(--eis); box-shadow: 0 0 0 6px color-mix(in srgb, var(--eis) 30%, transparent); }
+.det { margin-top: 0; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; }
 @media (max-width: 760px) { .det { grid-template-columns: 1fr; } }
 .verdict { display: flex; align-items: center; gap: 14px; }
 .lamp { width: 22px; height: 22px; border-radius: 50%; background: var(--ok); flex: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 22%, transparent); }
@@ -172,25 +178,38 @@ details.about .note { margin: 6px 0 0; }
         <span class="mono" id="lgmin">25 °C</span>
         <canvas id="lgbar" width="480" height="24" aria-hidden="true"></canvas>
         <span class="mono" id="lgmax">45 °C</span>
-        <span>· red ring = soft short (truth) · red glow = detector alarm</span>
+        <span>· red ring = soft short (truth) · red glow and pin = voltage (GRU) alarm · violet glow and diamond = impedance (EIS) alarm</span>
       </div>
-      <section class="det idle" id="det" aria-live="polite">
-        <div class="verdict">
-          <div class="lamp" aria-hidden="true"></div>
-          <div>
-            <div class="vtext" id="det-text">Short detector: not trained yet</div>
-            <div class="vsub" id="det-sub">The Physics AI NN reads only what the BMS sees: pack current, the 23 group voltages and the 2 NTCs (and, at cell level, a per-cell impedance temperature).</div>
+      <div class="dets">
+        <section class="det idle" id="det" aria-live="polite">
+          <div class="verdict">
+            <div class="lamp" aria-hidden="true"></div>
+            <div>
+              <div class="dlabel">Voltage detector · GRU on the NPU</div>
+              <div class="vtext" id="det-text">Not trained yet</div>
+              <div class="vsub" id="det-sub"></div>
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <span class="sub">Detector inputs</span>
+        </section>
+        <section class="det idle eis" id="det-eis" aria-live="polite">
+          <div class="verdict">
+            <div class="lamp" aria-hidden="true"></div>
+            <div>
+              <div class="dlabel">Impedance detector · BMA7418 EIS</div>
+              <div class="vtext" id="eis-text">Not available</div>
+              <div class="vsub" id="eis-sub"></div>
+            </div>
+          </div>
+        </section>
+        <div class="row detctl">
+          <span class="sub">Voltage detector inputs</span>
           <div class="seg" role="group" aria-label="Detector level">
             <button type="button" id="d-grp" aria-pressed="true">Group level</button>
             <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
           </div>
-          <button type="button" id="d-ack" title="Clear the latched alarm and let the detector learn a new baseline">Acknowledge &amp; re-arm</button>
+          <button type="button" id="d-ack" title="Clear the latched alarms of both detectors and let them learn a new baseline">Acknowledge &amp; re-arm both</button>
         </div>
-      </section>
+      </div>
     </section>
 
     <aside class="panel controls" aria-label="Controls">
@@ -374,6 +393,7 @@ details.about .note { margin: 6px 0 0; }
     t = 0; hist = []; I = 0; rng = mulberry(11); alarmHist = [];
     if (!Risc) Risc = new Float64Array(N);
     if (det) det.reset();
+    if (typeof eisDet !== "undefined" && eisDet) eisDet.reset();
     for (const m of meta.values()) { m.ton = 0; m.steps = []; m.P = 0; }
   }
   function cellCurrent(time) {
@@ -469,6 +489,9 @@ details.about .note { margin: 6px 0 0; }
   }
 
   // ---------------- detector (Physics AI NN), weights from training in the container
+  const EISP = /*EISP*/null;
+  /*EIS*/
+  const eisDet = EISP ? makeEIS(EISP) : null;
   const NN = /*NN*/null;
   const det = NN ? makeDetector(NN) : null;
   /*DETECTOR*/
@@ -538,8 +561,9 @@ details.about .note { margin: 6px 0 0; }
       // text
       x.fillStyle = "#ffffff"; x.textAlign = "left"; x.textBaseline = "middle";
       const tx = h * 0.12;
-      x.font = `700 ${Math.round(h * 0.40)}px Arial, Helvetica, sans-serif`; x.fillText("NXP S32K5", tx, h * 0.33);
-      x.font = `700 ${Math.round(h * 0.30)}px Arial, Helvetica, sans-serif`; x.fillStyle = "#7fe0b5"; x.fillText("NPU BMS", tx, h * 0.72);
+      x.font = `700 ${Math.round(h * 0.34)}px Arial, Helvetica, sans-serif`; x.fillText("NXP S32K5", tx, h * 0.27);
+      x.font = `700 ${Math.round(h * 0.24)}px Arial, Helvetica, sans-serif`; x.fillStyle = "#7fe0b5"; x.fillText("NPU BMS", tx, h * 0.58);
+      x.fillStyle = "#c9a8ff"; x.fillText("BMA7418 EIS", tx, h * 0.84);
       const tex = new THREE.CanvasTexture(c); tex.anisotropy = 4; return tex;
     }
     const bmsLen = Math.abs(zOut - zIn) + 60, bmsW = 110, bmsH = 100;
@@ -617,6 +641,11 @@ details.about .note { margin: 6px 0 0; }
     const pinGeo = new THREE.ConeGeometry(9, 26, 20); pinGeo.rotateX(Math.PI); pinGeo.translate(0, 13, 0);
     const pinMat = new THREE.MeshBasicMaterial({ color: 0xe8261a });
     const pins = new THREE.InstancedMesh(pinGeo, pinMat, N); pins.count = 0; scene.add(pins);
+    const haloE = new THREE.InstancedMesh(new THREE.CylinderGeometry(D / 2 + 4.5, D / 2 + 4.5, HC + 4, 40, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0x8a3ff0, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false }), N);
+    haloE.count = 0; scene.add(haloE);
+    const pinGeoE = new THREE.OctahedronGeometry(10); pinGeoE.translate(0, 10, 0);
+    const pinsE = new THREE.InstancedMesh(pinGeoE, new THREE.MeshBasicMaterial({ color: 0x8a3ff0 }), NS); pinsE.count = 0; scene.add(pinsE);
 
     // ---- inspector: the selected shorted cell, cut open
     const insp = new THREE.Group(); insp.visible = false; scene.add(insp);
@@ -684,7 +713,7 @@ details.about .note { margin: 6px 0 0; }
         goTo(c.clone().add(new THREE.Vector3(-210, 120, 210)), c);
       } else { const [p, tg] = ISO(); goTo(p, tg); }
     }
-    return { renderer, scene, camera, controls, cells, col, rings, ringGeo, ringMat, halos, pins, lampMat, M, px, pz, insp, fieldCv, fieldTex, fieldCv2, fieldTex2, dot,
+    return { renderer, scene, camera, controls, cells, col, rings, ringGeo, ringMat, halos, pins, haloE, pinsE, lampMat, M, px, pz, insp, fieldCv, fieldTex, fieldCv2, fieldTex2, dot,
              RC, RO, get inspK() { return inspK; }, setInspect, pickAt, goTo, ISO, TOP,
              get tween() { return tween; }, set spin(v) { spin = v; }, get spin() { return spin; } };
   }
@@ -738,7 +767,14 @@ details.about .note { margin: 6px 0 0; }
     flagged.forEach((k, n) => { gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.halos.setMatrixAt(n, gl.M); });
     gl.halos.instanceMatrix.needsUpdate = true;
     gl.halos.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(now / 160));
-    gl.lampMat.color.setHex(flagged.length ? ((Math.floor(now / 300) % 2) ? 0xff2a1a : 0x7a1208) : 0x2ecc71);
+    const eg = eisDet ? eisDet.flaggedGroups() : [];
+    gl.haloE.count = eg.length * NP;
+    eg.forEach((g, n) => { for (let j = 0; j < NP; j++) { const k = g * NP + j; gl.M.makeTranslation(gl.px(k), HC / 2, gl.pz(k)); gl.haloE.setMatrixAt(n * NP + j, gl.M); } });
+    gl.haloE.instanceMatrix.needsUpdate = true; gl.haloE.material.opacity = 0.25 + 0.3 * (0.5 + 0.5 * Math.cos(now / 170));
+    gl.pinsE.count = eg.length;
+    eg.forEach((g, n) => { const k = g * NP + 4; gl.M.makeTranslation(gl.px(k) + 26, HC + 32 + 6 * Math.cos(now / 250), gl.pz(k)); gl.pinsE.setMatrixAt(n, gl.M); });
+    gl.pinsE.instanceMatrix.needsUpdate = true; gl.pinsE.visible = gl.inspK < 0;
+    gl.lampMat.color.setHex((flagged.length || eg.length) ? ((Math.floor(now / 300) % 2) ? 0xff2a1a : 0x7a1208) : 0x2ecc71);
     // one pin per flagged group (group level) or per flagged cell (cell level), bobbing above it
     const pinCells = detLevel === "cell" ? flagged : (det ? det.flaggedGroups().map(g => g * NP + 4) : []);
     gl.pins.count = pinCells.length;
@@ -778,6 +814,8 @@ details.about .note { margin: 6px 0 0; }
     // alarm bands
     trx.fillStyle = css("--warn"); trx.globalAlpha = 0.12;
     for (const p of hist) if (p.al) trx.fillRect(X(p.t) - 2, T, 4, h - T - B);
+    trx.fillStyle = css("--eis");
+    for (const p of hist) if (p.ae) trx.fillRect(X(p.t) - 2, T + (h - T - B) / 2, 4, (h - T - B) / 2);
     trx.globalAlpha = 1;
     const line = (key, c, wdt, dash) => {
       trx.strokeStyle = c; trx.lineWidth = wdt; trx.setLineDash(dash || []); trx.beginPath(); let pen = false;
@@ -789,7 +827,7 @@ details.about .note { margin: 6px 0 0; }
   const vc = $("volts"), vcx = vc.getContext("2d");
   function drawVolts() {
     fitCanvas(vc);
-    const w = vc.width, h = vc.height, L = 64, R = 12, T = 16, B = 34;
+    const w = vc.width, h = vc.height, L = 84, R = 12, T = 16, B = 34;
     vcx.clearRect(0, 0, w, h);
     const mean = Vmeas.reduce((a, b) => a + b, 0) / NS;
     const d = Array.from(Vmeas, x => (x - mean) * 1000);
@@ -832,12 +870,32 @@ details.about .note { margin: 6px 0 0; }
     detReadout();
     return { ms: Ts[ks], mc: Tc[kc], hp: hk >= 0 ? hp : NaN };
   }
+  // alarm register: every new group alarm gets its own ID per detector (GRU-001, EIS-001, ...)
+  const alarmIds = { GRU: new Map(), EIS: new Map() }, alarmCount = { GRU: 0, EIS: 0 };
+  function alarmId(src, g) {
+    if (!alarmIds[src].has(g)) alarmIds[src].set(g, `${src}-${String(++alarmCount[src]).padStart(3, "0")}`);
+    return alarmIds[src].get(g);
+  }
+  function sinceOnset(g, tAl) {                 // the twin knows the truth; the detectors do not
+    let ton = Infinity; for (const [k, m] of meta) if (grp[k] === g) ton = Math.min(ton, m.ton);
+    return isFinite(ton) && tAl >= ton ? ` · ${((tAl - ton) / 60).toFixed(1)} min after the short started` : (isFinite(ton) ? "" : " · no short in this group (false alarm)");
+  }
   function detReadout() {
     const box2 = $("det");
-    if (!det) { box2.className = "det idle"; return; }
-    const v = det.verdict(detLevel);
-    box2.className = "det " + (v.alarm ? "alarm" : "ok");
-    $("det-text").textContent = v.text; $("det-sub").textContent = v.sub;
+    if (!det) { box2.className = "det idle"; }
+    else {
+      const v = det.verdict(detLevel);
+      box2.className = "det " + (v.alarm ? "alarm" : "ok");
+      const fg = det.flaggedGroups();
+      $("det-text").textContent = v.alarm ? `Alarm ${alarmId("GRU", fg[0])}: ${v.text.replace(/^ALARM: /, "")}` : v.text;
+      $("det-sub").textContent = v.alarm ? v.sub.replace(/^(Detected at t = [^·]*?)( by the [a-z]+ path)/, (m0, a1, a2) => a1.trim() + a2 + sinceOnset(v.group, v.t)) : v.sub;
+    }
+    const box3 = $("det-eis");
+    if (!eisDet) { box3.className = "det idle eis"; return; }
+    const e = eisDet.verdict();
+    box3.className = "det eis " + (e.alarm ? "alarm" : "ok");
+    $("eis-text").textContent = e.alarm ? `Alarm ${alarmId("EIS", e.group)}: ${e.text}` : e.text;
+    $("eis-sub").textContent = e.alarm ? `Detected at t = ${fmtT(e.t)}${sinceOnset(e.group, e.t)} · ${e.sub}` : e.sub;
   }
   function inspectText(k) {
     const m = meta.get(k), Pk = shortPower(k);
@@ -897,7 +955,7 @@ details.about .note { margin: 6px 0 0; }
   $("d-cell").addEventListener("click", () => { detLevel = "cell"; press("d-cell", ["d-grp"]); });
   // the alarm latches, as a BMS safety alarm would; the operator acknowledges it, and the
   // detector starts again from a fresh baseline (the charge the short took stays lost)
-  $("d-ack").addEventListener("click", () => { if (det) det.reset(); for (const p of hist) p.al = false; });
+  $("d-ack").addEventListener("click", () => { if (det) det.reset(); if (eisDet) eisDet.reset(); alarmIds.GRU.clear(); alarmIds.EIS.clear(); for (const p of hist) { p.al = false; p.ae = false; } });
   if (gl) {
     $("v-iso").addEventListener("click", () => { gl.spin = false; gl.setInspect(-1); press("v-iso", ["v-top", "v-spin"]); });
     $("v-top").addEventListener("click", () => { gl.spin = false; if (gl.inspK >= 0) gl.setInspect(-1); const [p, tg] = gl.TOP(); gl.goTo(p, tg); press("v-top", ["v-iso", "v-spin"]); });
@@ -947,17 +1005,17 @@ details.about .note { margin: 6px 0 0; }
   let last = performance.now(), acc = 0, lastHist = -1e9;
   function record() {
     let hpv = NaN; for (const k of meta.keys()) { const v = hotspot(k); if (!(v <= hpv)) hpv = v; }
-    hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: Math.max(...Ts), mc: Math.max(...Tc), hp: hpv, al: det ? det.verdict(detLevel).alarm : false });
+    hist.push({ t, n1: Ts[NTC1], n2: Ts[NTC2], ms: Math.max(...Ts), mc: Math.max(...Tc), hp: hpv, al: det ? det.verdict(detLevel).alarm : false, ae: eisDet ? eisDet.verdict().alarm : false });
     if (hist.length > 900) hist.shift();
   }
-  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (t - lastHist >= 5) { record(); lastHist = t; } }
+  for (let n = 0; n < 600; n++) { step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t); if (t - lastHist >= 5) { record(); lastHist = t; } }
   // the module starts healthy: no short until the user clicks a cell
   function frame(now) {
     const realDt = Math.min(0.1, (now - last) / 1000); last = now;
     if (running) {
       acc += realDt * +ui.speed.value; let n = 0;
       while (acc >= DT && n < 4000) {
-        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); acc -= DT; n++;
+        step(DT); if (det) det.observe(t, I, Vmeas, Timp1); if (eisDet) eisDet.observe(t); acc -= DT; n++;
         if (t - lastHist >= Math.max(2, +ui.speed.value / 15)) { record(); lastHist = t; }
       }
     }
