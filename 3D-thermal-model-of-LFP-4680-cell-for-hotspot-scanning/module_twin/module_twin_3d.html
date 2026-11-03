@@ -232,6 +232,7 @@ canvas.chart { width: 100%; height: 190px; display: block; }
         <button type="button" id="d-grp" aria-pressed="true">Group level</button>
         <button type="button" id="d-cell" aria-pressed="false">Cell level</button>
       </div>
+      <button type="button" id="d-ack" title="Clear the latched alarm and let the detector learn a new baseline">Acknowledge &amp; re-arm</button>
     </div>
   </section>
 
@@ -895,6 +896,9 @@ canvas.chart { width: 100%; height: 190px; display: block; }
   $("m-core").addEventListener("click", () => { mode = "core"; press("m-core", ["m-surf"]); });
   $("d-grp").addEventListener("click", () => { detLevel = "group"; press("d-grp", ["d-cell"]); });
   $("d-cell").addEventListener("click", () => { detLevel = "cell"; press("d-cell", ["d-grp"]); });
+  // the alarm latches, as a BMS safety alarm would; the operator acknowledges it, and the
+  // detector starts again from a fresh baseline (the charge the short took stays lost)
+  $("d-ack").addEventListener("click", () => { if (det) det.reset(); for (const p of hist) p.al = false; });
   if (gl) {
     $("v-iso").addEventListener("click", () => { gl.spin = false; gl.setInspect(-1); press("v-iso", ["v-top", "v-spin"]); });
     $("v-top").addEventListener("click", () => { gl.spin = false; if (gl.inspK >= 0) gl.setInspect(-1); const [p, tg] = gl.TOP(); gl.goTo(p, tg); press("v-top", ["v-iso", "v-spin"]); });
