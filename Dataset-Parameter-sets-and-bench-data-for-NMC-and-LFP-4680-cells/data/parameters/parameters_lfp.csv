@@ -1,0 +1,22 @@
+quantity,value,unit,provenance
+can_outer_diameter,46.3,mm,M
+can_height,80.2,mm,M
+can_wall,0.4182,mm,E
+cell_mass,332,g,M
+capacity_measured,15.41,Ah,M
+cathode_height,69,mm,M
+cathode_length,5370,mm,M
+anode_height,71,mm,M
+anode_length,5513,mm,M
+cathode_coating_per_side,70,um,D
+anode_coating_per_side,54.5,um,M
+foil_cu,10,um,M
+foil_al,10,um,M
+separator_thickness,13.73,um,E
+cathode_porosity,0.331013,-,D from mass
+anode_porosity,0.319,-,E
+areal_capacity_cathode,2.09,mAh/cm2,M
+areal_capacity_anode,2.34,mAh/cm2,M
+collector_disk_thickness,0.31,mm,M
+insulator_thickness,0.29,mm,M
+roll_outer_radius,2.29562,cm,D

@@ -1,0 +1,6 @@
+audit,cell,model,measured,residual_pct
+mass,NMC,332.8,355.9,6.48
+mass,LFP,332.0,332.0,-0.00
+capacity,LFP,15.488,15.410,0.51
+winding,NMC,331.0,326.7,1.30
+winding,LFP,2.296,2.273,0.99

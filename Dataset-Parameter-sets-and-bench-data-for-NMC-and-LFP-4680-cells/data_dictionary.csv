@@ -1,0 +1,180 @@
+file,column,unit,type,description
+data/bench/fc4680_c1_1C_2C.csv,step_index,-,integer,"Step number of the test protocol (1-8, see METHODS.md)"
+data/bench/fc4680_c1_1C_2C.csv,step_type,-,string,CCCV Chg = constant current then constant voltage charge; CC DChg = constant-current discharge; Rest = zero current
+data/bench/fc4680_c1_1C_2C.csv,test_time_s,s,float,"Time since the start of the test, reconstructed from the step durations"
+data/bench/fc4680_c1_1C_2C.csv,time_in_step_s,s,float,Time since the start of the step
+data/bench/fc4680_c1_1C_2C.csv,current_A,A,float,"Cell current; positive = charge, negative = discharge"
+data/bench/fc4680_c1_1C_2C.csv,voltage_V,V,float,Terminal voltage at the sense contacts
+data/bench/fc4680_c1_1C_2C.csv,step_capacity_Ah,Ah,float,Charge passed since the start of the step
+data/bench/fc4680_c1_1C_2C.csv,step_energy_Wh,Wh,float,Energy passed since the start of the step
+data/bench/fc4680_c1_1C_2C.csv,T1_C,degC,float,"Can temperature, type-T thermocouple 1 mm from the positive end"
+data/bench/fc4680_c1_1C_2C.csv,T2_C,degC,float,"Can temperature, type-T thermocouple at mid-height"
+data/bench/fc4680_c1_1C_2C.csv,T3_C,degC,float,"Can temperature, type-T thermocouple 1 mm from the negative end"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,t_s,s,float,"Time from the start of the CC charge, resampled to 10 s"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,T_cap_1C_C,degC,float,"Can temperature at the cap, 1C charge"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,T_center_1C_C,degC,float,"Can temperature at the centre, 1C charge"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,T_bottom_1C_C,degC,float,"Can temperature at the bottom, 1C charge"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,T_cap_2C_C,degC,float,"Cap, 2C charge"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,T_center_2C_C,degC,float,"Centre, 2C charge"
+data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv,T_bottom_2C_C,degC,float,"Bottom, 2C charge"
+data/published_nmc_ank2023_digitised/hppc_r10s_fig14.csv,SOC_pct,%,float,State of charge
+data/published_nmc_ank2023_digitised/hppc_r10s_fig14.csv,R10s_<rate>_<direction>_mOhm,mOhm,float,"10 s pulse resistance at 0.5C, 1.0C or 1.5C, discharge or charge (six columns)"
+data/published_nmc_ank2023_digitised/pocv_c20_fig13a.csv,Q_Ah,Ah,float,Charge from the discharged state
+data/published_nmc_ank2023_digitised/pocv_c20_fig13a.csv,V,V,float,C/20 pseudo open-circuit voltage
+data/published_nmc_ank2023_digitised/eis_fig12b_points.csv,cell,-,string,Cell identifier of Ank et al.
+data/published_nmc_ank2023_digitised/eis_fig12b_points.csv,SOC_pct,%,float,State of charge
+data/published_nmc_ank2023_digitised/eis_fig12b_points.csv,ReZ_mOhm,mOhm,float,Real part of the impedance
+data/published_nmc_ank2023_digitised/eis_fig12b_points.csv,negImZ_mOhm,mOhm,float,Negative imaginary part of the impedance
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,cell,-,string,Cell identifier
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,SOC_pct,%,float,State of charge
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,R_hf_mOhm,mOhm,float,High-frequency intercept
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,R_arc_end_mOhm,mOhm,float,Real part at the end of the charge-transfer arc
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,R_ct_mOhm,mOhm,float,Arc width (R_arc_end - R_hf)
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,Re_10mHz_mOhm,mOhm,float,Real part at 10 mHz
+data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv,negIm_10mHz_mOhm,mOhm,float,Negative imaginary part at 10 mHz
+data/parameters/parameters_both_cells.csv,group,-,string,"Layer or model group (Cu, anode, separator, cathode, Al, electrolyte, cell, thermal)"
+data/parameters/parameters_both_cells.csv,parameter,-,string,Parameter name in the model
+data/parameters/parameters_both_cells.csv,symbol,-,string,LaTeX symbol
+data/parameters/parameters_both_cells.csv,unit,-,string,Unit of both value columns
+data/parameters/parameters_both_cells.csv,nmc_value,see unit,float,Value for the Tesla NMC811/graphite 4680 cell
+data/parameters/parameters_both_cells.csv,nmc_tag,-,string,"Provenance: M measured, L literature, D derived, E estimated"
+data/parameters/parameters_both_cells.csv,nmc_source,-,string,Source or derivation
+data/parameters/parameters_both_cells.csv,lfp_value,see unit,float,Value for the BYD FC4680 LiFePO4/graphite cell
+data/parameters/parameters_both_cells.csv,lfp_tag,-,string,Provenance tag
+data/parameters/parameters_both_cells.csv,lfp_source,-,string,Source or derivation
+data/parameters/parameters_both_cells.csv,open_issue,-,string,Known open question about the value
+data/parameters/parameters_both_cells.json,(records),-,json,"Same content as parameters_both_cells.csv, one object per parameter"
+data/parameters/parameters_nmc.csv,section,-,string,Table section
+data/parameters/parameters_nmc.csv,symbol,-,string,LaTeX symbol
+data/parameters/parameters_nmc.csv,value,see unit,float,Value
+data/parameters/parameters_nmc.csv,unit,-,string,Unit
+data/parameters/parameters_nmc.csv,provenance,-,string,M/L/D/E
+data/parameters/parameters_nmc.csv,note,-,string,Source or derivation
+data/parameters/parameters_lfp.csv,quantity,-,string,Geometric or design quantity
+data/parameters/parameters_lfp.csv,value,see unit,float,Value
+data/parameters/parameters_lfp.csv,unit,-,string,Unit
+data/parameters/parameters_lfp.csv,provenance,-,string,M/L/D/E
+data/parameters/closure_audits.csv,audit,-,string,"Closure: mass, capacity, winding length"
+data/parameters/closure_audits.csv,cell,-,string,NMC or LFP
+data/parameters/closure_audits.csv,model,see audit,float,Value computed from the parameter set
+data/parameters/closure_audits.csv,measured,see audit,float,Independently measured value
+data/parameters/closure_audits.csv,residual_pct,%,float,(model - measured)/measured
+data/parameters/quality_audits.csv,audit,-,string,Closure check
+data/parameters/quality_audits.csv,cell_id,-,string,Cell identifier
+data/parameters/quality_audits.csv,model,-,string,Model value with unit
+data/parameters/quality_audits.csv,reference,-,string,Reference value with unit
+data/parameters/quality_audits.csv,residual_pct,%,string,Residual
+data/parameters/quality_audits.csv,reference_source,-,string,Source of the reference
+data/parameters/metadata_primary.csv,(13 columns),-,string,"Minimal mandatory record per cell, Battery Data Genome tier 1 (Ward et al. 2022): identifier, manufacturer, model, format, electrodes, nominal capacity and voltage, mass, generator, source, objective, tests"
+data/parameters/metadata_secondary.csv,cell_id,-,string,Cell identifier
+data/parameters/metadata_secondary.csv,quantity,-,string,Cell or electrode design quantity
+data/parameters/metadata_secondary.csv,value,see unit,float,Value
+data/parameters/metadata_secondary.csv,unit,-,string,Unit
+data/parameters/metadata_secondary.csv,provenance,-,string,M/L/D/E
+data/parameters/metadata_tertiary.csv,cell_id,-,string,Cell identifier
+data/parameters/metadata_tertiary.csv,domain,-,string,Model domain
+data/parameters/metadata_tertiary.csv,parameter,-,string,Parameter name
+data/parameters/metadata_tertiary.csv,symbol,-,string,LaTeX symbol
+data/parameters/metadata_tertiary.csv,value,see unit,float,Value
+data/parameters/metadata_tertiary.csv,unit,-,string,Unit
+data/parameters/metadata_tertiary.csv,provenance,-,string,M/L/D/E
+data/parameters/metadata_tertiary.csv,note,-,string,Source or derivation
+data/parameters/bpx_nmc4680.json,(BPX 0.4 schema),SI,json,NMC parameter set in the Battery Parameter eXchange format; loads with pybamm.ParameterValues.create_from_bpx
+data/calibration/calibrated_parameters.csv,cell,-,string,NMC or LFP
+data/calibration/calibrated_parameters.csv,parameter,-,string,Calibrated quantity
+data/calibration/calibrated_parameters.csv,symbol,-,string,Symbol used in METHODS.md
+data/calibration/calibrated_parameters.csv,transferred_value,see unit,float,Value before calibration (blank if not part of the transferred set)
+data/calibration/calibrated_parameters.csv,calibrated_value,see unit,float,Value of the calibrated set
+data/calibration/calibrated_parameters.csv,unit,-,string,Unit
+data/calibration/calibrated_parameters.csv,note,-,string,Meaning
+data/calibration/model_runs.csv,cell,-,string,NMC or LFP
+data/calibration/model_runs.csv,run,-,string,transferred (before calibration) or calibrated
+data/calibration/model_runs.csv,rate_C,C,integer,Rate of the run (1 or 2)
+data/calibration/model_runs.csv,variable,-,string,"T_can_C, T_roll_C, voltage_V, voltage_rest_V (after cut-off), heat_W"
+data/calibration/model_runs.csv,time_s,s,float,Time from the start of the CC step
+data/calibration/model_runs.csv,value,see variable,float,Model output
+data/calibration/lfp_opt3_log.csv,k,-,integer,Evaluation number
+data/calibration/lfp_opt3_log.csv,log10dsf,-,float,log10 of the factor on the cathode diffusivity
+data/calibration/lfp_opt3_log.csv,Ea_kJ,kJ/mol,float,Activation energy of the cathode diffusivity
+data/calibration/lfp_opt3_log.csv,theta0,-,float,Anode stoichiometry at full charge
+data/calibration/lfp_opt3_log.csv,Rc_mOhm,mOhm,float,Contact resistance heated in the can node
+data/calibration/lfp_opt3_log.csv,log10adsf,-,float,log10 factor on the anode diffusivity (opt3 only)
+data/calibration/lfp_opt3_log.csv,log10kreg,-,float,log10 of the exchange-current floor (opt3 only)
+data/calibration/lfp_opt3_log.csv,ocpw,-,float,Width of the end-of-lithiation drop (opt7-9)
+data/calibration/lfp_opt3_log.csv,ocpn,-,float,Exponent of the drop (opt9)
+data/calibration/lfp_opt3_log.csv,cost,-,float,Cost J of METHODS.md
+data/calibration/lfp_opt3_log.csv,"T1, T2",K,float,"RMS can-temperature difference at 1C, 2C"
+data/calibration/lfp_opt3_log.csv,"V1, V2",mV,float,"RMS voltage difference at 1C, 2C"
+data/calibration/lfp_opt3_log.csv,"dQ1, dQ2 / dQ28_1, dQ28_2",Ah,float,"Charge difference at 2.8 V, 1C and 2C"
+data/calibration/lfp_opt3_log.csv,"dQ20_1, dQ20_2",Ah,float,Charge difference at 2.0 V
+data/calibration/lfp_opt3_log.csv,"dPk1, dPk2",K,float,Peak can-temperature difference
+data/calibration/lfp_opt7_log.csv,k,-,integer,Evaluation number
+data/calibration/lfp_opt7_log.csv,log10dsf,-,float,log10 of the factor on the cathode diffusivity
+data/calibration/lfp_opt7_log.csv,Ea_kJ,kJ/mol,float,Activation energy of the cathode diffusivity
+data/calibration/lfp_opt7_log.csv,theta0,-,float,Anode stoichiometry at full charge
+data/calibration/lfp_opt7_log.csv,Rc_mOhm,mOhm,float,Contact resistance heated in the can node
+data/calibration/lfp_opt7_log.csv,log10adsf,-,float,log10 factor on the anode diffusivity (opt3 only)
+data/calibration/lfp_opt7_log.csv,log10kreg,-,float,log10 of the exchange-current floor (opt3 only)
+data/calibration/lfp_opt7_log.csv,ocpw,-,float,Width of the end-of-lithiation drop (opt7-9)
+data/calibration/lfp_opt7_log.csv,ocpn,-,float,Exponent of the drop (opt9)
+data/calibration/lfp_opt7_log.csv,cost,-,float,Cost J of METHODS.md
+data/calibration/lfp_opt7_log.csv,"T1, T2",K,float,"RMS can-temperature difference at 1C, 2C"
+data/calibration/lfp_opt7_log.csv,"V1, V2",mV,float,"RMS voltage difference at 1C, 2C"
+data/calibration/lfp_opt7_log.csv,"dQ1, dQ2 / dQ28_1, dQ28_2",Ah,float,"Charge difference at 2.8 V, 1C and 2C"
+data/calibration/lfp_opt7_log.csv,"dQ20_1, dQ20_2",Ah,float,Charge difference at 2.0 V
+data/calibration/lfp_opt7_log.csv,"dPk1, dPk2",K,float,Peak can-temperature difference
+data/calibration/lfp_opt8_log.csv,k,-,integer,Evaluation number
+data/calibration/lfp_opt8_log.csv,log10dsf,-,float,log10 of the factor on the cathode diffusivity
+data/calibration/lfp_opt8_log.csv,Ea_kJ,kJ/mol,float,Activation energy of the cathode diffusivity
+data/calibration/lfp_opt8_log.csv,theta0,-,float,Anode stoichiometry at full charge
+data/calibration/lfp_opt8_log.csv,Rc_mOhm,mOhm,float,Contact resistance heated in the can node
+data/calibration/lfp_opt8_log.csv,log10adsf,-,float,log10 factor on the anode diffusivity (opt3 only)
+data/calibration/lfp_opt8_log.csv,log10kreg,-,float,log10 of the exchange-current floor (opt3 only)
+data/calibration/lfp_opt8_log.csv,ocpw,-,float,Width of the end-of-lithiation drop (opt7-9)
+data/calibration/lfp_opt8_log.csv,ocpn,-,float,Exponent of the drop (opt9)
+data/calibration/lfp_opt8_log.csv,cost,-,float,Cost J of METHODS.md
+data/calibration/lfp_opt8_log.csv,"T1, T2",K,float,"RMS can-temperature difference at 1C, 2C"
+data/calibration/lfp_opt8_log.csv,"V1, V2",mV,float,"RMS voltage difference at 1C, 2C"
+data/calibration/lfp_opt8_log.csv,"dQ1, dQ2 / dQ28_1, dQ28_2",Ah,float,"Charge difference at 2.8 V, 1C and 2C"
+data/calibration/lfp_opt8_log.csv,"dQ20_1, dQ20_2",Ah,float,Charge difference at 2.0 V
+data/calibration/lfp_opt8_log.csv,"dPk1, dPk2",K,float,Peak can-temperature difference
+data/calibration/lfp_opt9_log.csv,k,-,integer,Evaluation number
+data/calibration/lfp_opt9_log.csv,log10dsf,-,float,log10 of the factor on the cathode diffusivity
+data/calibration/lfp_opt9_log.csv,Ea_kJ,kJ/mol,float,Activation energy of the cathode diffusivity
+data/calibration/lfp_opt9_log.csv,theta0,-,float,Anode stoichiometry at full charge
+data/calibration/lfp_opt9_log.csv,Rc_mOhm,mOhm,float,Contact resistance heated in the can node
+data/calibration/lfp_opt9_log.csv,log10adsf,-,float,log10 factor on the anode diffusivity (opt3 only)
+data/calibration/lfp_opt9_log.csv,log10kreg,-,float,log10 of the exchange-current floor (opt3 only)
+data/calibration/lfp_opt9_log.csv,ocpw,-,float,Width of the end-of-lithiation drop (opt7-9)
+data/calibration/lfp_opt9_log.csv,ocpn,-,float,Exponent of the drop (opt9)
+data/calibration/lfp_opt9_log.csv,cost,-,float,Cost J of METHODS.md
+data/calibration/lfp_opt9_log.csv,"T1, T2",K,float,"RMS can-temperature difference at 1C, 2C"
+data/calibration/lfp_opt9_log.csv,"V1, V2",mV,float,"RMS voltage difference at 1C, 2C"
+data/calibration/lfp_opt9_log.csv,"dQ1, dQ2 / dQ28_1, dQ28_2",Ah,float,"Charge difference at 2.8 V, 1C and 2C"
+data/calibration/lfp_opt9_log.csv,"dQ20_1, dQ20_2",Ah,float,Charge difference at 2.0 V
+data/calibration/lfp_opt9_log.csv,"dPk1, dPk2",K,float,Peak can-temperature difference
+data/calibration/lfp_opt_log.csv,k,-,integer,Evaluation number
+data/calibration/lfp_opt_log.csv,log10dsf,-,float,log10 of the factor on the cathode diffusivity
+data/calibration/lfp_opt_log.csv,Ea_kJ,kJ/mol,float,Activation energy of the cathode diffusivity
+data/calibration/lfp_opt_log.csv,theta0,-,float,Anode stoichiometry at full charge
+data/calibration/lfp_opt_log.csv,Rc_mOhm,mOhm,float,Contact resistance heated in the can node
+data/calibration/lfp_opt_log.csv,log10adsf,-,float,log10 factor on the anode diffusivity (opt3 only)
+data/calibration/lfp_opt_log.csv,log10kreg,-,float,log10 of the exchange-current floor (opt3 only)
+data/calibration/lfp_opt_log.csv,ocpw,-,float,Width of the end-of-lithiation drop (opt7-9)
+data/calibration/lfp_opt_log.csv,ocpn,-,float,Exponent of the drop (opt9)
+data/calibration/lfp_opt_log.csv,cost,-,float,Cost J of METHODS.md
+data/calibration/lfp_opt_log.csv,"T1, T2",K,float,"RMS can-temperature difference at 1C, 2C"
+data/calibration/lfp_opt_log.csv,"V1, V2",mV,float,"RMS voltage difference at 1C, 2C"
+data/calibration/lfp_opt_log.csv,"dQ1, dQ2 / dQ28_1, dQ28_2",Ah,float,"Charge difference at 2.8 V, 1C and 2C"
+data/calibration/lfp_opt_log.csv,"dQ20_1, dQ20_2",Ah,float,Charge difference at 2.0 V
+data/calibration/lfp_opt_log.csv,"dPk1, dPk2",K,float,Peak can-temperature difference
+data/calibration/nmc_opt1_log.csv,k,-,integer,Evaluation number
+data/calibration/nmc_opt1_log.csv,cost,-,float,Cost J
+data/calibration/nmc_opt1_log.csv,tauc,s,float,Cathode diffusion time
+data/calibration/nmc_opt1_log.csv,rc_mohm,mOhm,float,Contact resistance heated in the can node
+data/calibration/nmc_opt1_log.csv,Ea,J/mol,float,Activation energy of the cathode diffusivity
+data/calibration/nmc_opt1_log.csv,ath0,-,float,Anode stoichiometry at full charge
+data/calibration/nmc_opt1_log.csv,"Trms1, Trms2",K,float,"RMS mean-can-temperature difference at 1C, 2C"
+data/calibration/nmc_opt1_log.csv,"dpk1, dpk2",K,float,Peak temperature difference
+data/calibration/nmc_opt1_log.csv,"dQ1, dQ2",Ah,float,Charge difference at 4.2 V
+data/calibration/nmc_opt1_log.csv,sec,s,float,Wall time of the evaluation

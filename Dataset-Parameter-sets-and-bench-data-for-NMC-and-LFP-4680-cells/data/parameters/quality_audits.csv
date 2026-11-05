@@ -1,0 +1,6 @@
+audit,cell_id,model,reference,residual_pct,reference_source
+cell mass,NMC-4680-ANK2023,332.8 g,355.9 g,+6.48,"Ank et al. 2023, weighed"
+cell mass,LFP-FC4680-LIU2025,332.0 g,332.0 g,-0.00,Liu et al. 2025 / public listings
+cell capacity,LFP-FC4680-LIU2025,15.488 Ah,15.410 Ah,+0.51,"Liu et al. 2025, measured"
+electrode length,NMC-4680-ANK2023,331.0 cm,326.7 cm,+1.30,"Ank et al. 2023, unwound and measured"
+roll radius,LFP-FC4680-LIU2025,2.296 cm,2.273 cm,+0.99,bore of the measured can

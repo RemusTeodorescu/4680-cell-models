@@ -1,0 +1,1465 @@
+{
+ "@context": {
+  "@vocab": "https://schema.org/",
+  "sc": "https://schema.org/",
+  "cr": "http://mlcommons.org/croissant/"
+ },
+ "@type": "sc:Dataset",
+ "conformsTo": "http://mlcommons.org/croissant/1.0",
+ "name": "Parameter sets and bench data for NMC and LFP 4680 cylindrical lithium-ion cells",
+ "description": "Provenance-tagged electrochemical-thermal (thermal DFN) parameter sets for the Tesla NMC811/graphite 4680 cell and the BYD FC4680 LiFePO4/graphite cell, closure checks, a bench test of the BYD FC4680 (1C and 2C discharges with three can temperatures), digitised published measurements of the Tesla 4680, and the calibration logs and model runs.",
+ "license": "https://opendatacommons.org/licenses/by/1-0/",
+ "url": "https://github.com/RemusTeodorescu/4680-cell-models",
+ "creator": [
+  {
+   "@type": "Person",
+   "name": "Remus Teodorescu"
+  },
+  {
+   "@type": "Person",
+   "name": "Nicolai A. Weinreich"
+  },
+  {
+   "@type": "Person",
+   "name": "Berke Bilgin"
+  },
+  {
+   "@type": "Person",
+   "name": "Yi Zhuang"
+  },
+  {
+   "@type": "Person",
+   "name": "Wenzel Prochazka"
+  }
+ ],
+ "keywords": [
+  "lithium-ion battery",
+  "4680",
+  "LiFePO4",
+  "NMC811",
+  "Doyle-Fuller-Newman",
+  "thermal model",
+  "parameter set",
+  "BPX"
+ ],
+ "distribution": [
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/README_metadata.txt",
+   "name": "data/parameters/README_metadata.txt",
+   "contentUrl": "data/parameters/README_metadata.txt",
+   "encodingFormat": "text/plain",
+   "sha256": "01b850fe1434d3fcfcaf8b3716e160274e8a675a2bfe964639e2838c95954d91"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/bpx_nmc4680.json",
+   "name": "data/parameters/bpx_nmc4680.json",
+   "contentUrl": "data/parameters/bpx_nmc4680.json",
+   "encodingFormat": "application/json",
+   "sha256": "d3a32b098e294bf6de72a27f87a0ebba7c788e88e5192f95b8fa98815f6418ee"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/closure_audits.csv",
+   "name": "data/parameters/closure_audits.csv",
+   "contentUrl": "data/parameters/closure_audits.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "b6045b9fddf882b577d3ecd1fecd6c8e0d877b146e6eaa055d1ec71a07b2d206"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/metadata_primary.csv",
+   "name": "data/parameters/metadata_primary.csv",
+   "contentUrl": "data/parameters/metadata_primary.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "a60c5d18bbf8b2fe681cdde6d0cb1f9166c742c6796f7b57129d4917f22d9b08"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/metadata_secondary.csv",
+   "name": "data/parameters/metadata_secondary.csv",
+   "contentUrl": "data/parameters/metadata_secondary.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "af0d257b765a6f583547f32121773d5953e285a02b484955300cd4244eed75c5"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/metadata_tertiary.csv",
+   "name": "data/parameters/metadata_tertiary.csv",
+   "contentUrl": "data/parameters/metadata_tertiary.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "540c58e1ee2f4bc9f558d0d960e4be639f8bb5b7a1f9090cced763a38dee93f1"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/parameters_both_cells.csv",
+   "name": "data/parameters/parameters_both_cells.csv",
+   "contentUrl": "data/parameters/parameters_both_cells.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "99051c2694dc7266a38edff0ac4e9ad0f8f06390703927a3b7d0267d08794101"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/parameters_both_cells.json",
+   "name": "data/parameters/parameters_both_cells.json",
+   "contentUrl": "data/parameters/parameters_both_cells.json",
+   "encodingFormat": "application/json",
+   "sha256": "a1123a50e2b076ea6d7440bc1b453c2736a7e6b6579d3b64ccf0224b11b85bdd"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/parameters_lfp.csv",
+   "name": "data/parameters/parameters_lfp.csv",
+   "contentUrl": "data/parameters/parameters_lfp.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "b5d96d810813eb78de1f2e301464e9c10ed02333ed475d376598b3cd9f90f828"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/parameters_nmc.csv",
+   "name": "data/parameters/parameters_nmc.csv",
+   "contentUrl": "data/parameters/parameters_nmc.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "f8cf4bb67d7fed63ee18e5a474c64228155af96132c351984a3e9fedf0a64047"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/parameters/quality_audits.csv",
+   "name": "data/parameters/quality_audits.csv",
+   "contentUrl": "data/parameters/quality_audits.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "1f1ba478fe8502a7bf49781a65eb9576a158d215a5eb16e4e54b5363f829363e"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/published_nmc_ank2023_digitised/eis_fig12b_points.csv",
+   "name": "data/published_nmc_ank2023_digitised/eis_fig12b_points.csv",
+   "contentUrl": "data/published_nmc_ank2023_digitised/eis_fig12b_points.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "c5f42aff78b43f027a11746f0b6f85f9d520b82fb59bea6258dd6c6dd5f81838"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv",
+   "name": "data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv",
+   "contentUrl": "data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "a20e8b12b8a721b1df2b4daedda28ad61af4a813715b4c7df956a1b1ddc15687"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/published_nmc_ank2023_digitised/hppc_r10s_fig14.csv",
+   "name": "data/published_nmc_ank2023_digitised/hppc_r10s_fig14.csv",
+   "contentUrl": "data/published_nmc_ank2023_digitised/hppc_r10s_fig14.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "a8589a4453a0ea68f0f5d4d16ebcf8ca837c99e1bd14d3328ab79994a3ea6b96"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/published_nmc_ank2023_digitised/pocv_c20_fig13a.csv",
+   "name": "data/published_nmc_ank2023_digitised/pocv_c20_fig13a.csv",
+   "contentUrl": "data/published_nmc_ank2023_digitised/pocv_c20_fig13a.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "42f1db1062a2fbba73404f5bfa993ae0ca200c9090caea2e6e35e79567268080"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv",
+   "name": "data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv",
+   "contentUrl": "data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "d8f9335c5fbec708d261a091db6db9677e173ac8d2ae8bcbc472dde026fe32b7"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/calibrated_parameters.csv",
+   "name": "data/calibration/calibrated_parameters.csv",
+   "contentUrl": "data/calibration/calibrated_parameters.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "9e8496a56909d9cfa81c3a067dd3f7438e484157b049cc7b3b4587e74f49d1bc"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/lfp_opt3_log.csv",
+   "name": "data/calibration/lfp_opt3_log.csv",
+   "contentUrl": "data/calibration/lfp_opt3_log.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "23b42bb35f05b06aecb40c32ae382f615655987cbaae5b1aaf775c6f75a12f8d"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/lfp_opt7_log.csv",
+   "name": "data/calibration/lfp_opt7_log.csv",
+   "contentUrl": "data/calibration/lfp_opt7_log.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "568ea7d649d15ba5008642d5e62d8e150a76c3c5aef328d0f03c50cc95535dab"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/lfp_opt8_log.csv",
+   "name": "data/calibration/lfp_opt8_log.csv",
+   "contentUrl": "data/calibration/lfp_opt8_log.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "06a4b64106bb661ec099615a422929778fffaba6822e63372632f5d3c49fc986"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/lfp_opt9_log.csv",
+   "name": "data/calibration/lfp_opt9_log.csv",
+   "contentUrl": "data/calibration/lfp_opt9_log.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "067b3463a4fcce8c07426cec22c33a62025d5f771d97c39ba6f1869cbc9b9d3d"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/lfp_opt_log.csv",
+   "name": "data/calibration/lfp_opt_log.csv",
+   "contentUrl": "data/calibration/lfp_opt_log.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "f74d70630728bd01314a0e9e2148ab230f3b795bb5a36b25968066e48226b379"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/model_runs.csv",
+   "name": "data/calibration/model_runs.csv",
+   "contentUrl": "data/calibration/model_runs.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "d470db19ffdbb1ba51cd72d0ab365b86df27ee9c0267c4a2558113cf492eaf61"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/calibration/nmc_opt1_log.csv",
+   "name": "data/calibration/nmc_opt1_log.csv",
+   "contentUrl": "data/calibration/nmc_opt1_log.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "b84511856c87d218aa87532a1c2030be7defa4940b6a96fd833ef8f69c3b8b3c"
+  },
+  {
+   "@type": "cr:FileObject",
+   "@id": "data/bench/fc4680_c1_1C_2C.csv",
+   "name": "data/bench/fc4680_c1_1C_2C.csv",
+   "contentUrl": "data/bench/fc4680_c1_1C_2C.csv",
+   "encodingFormat": "text/csv",
+   "sha256": "a21dc04423d12a749293460d1035e9264f5bc8b9417cee0ff2201d14000734bd"
+  }
+ ],
+ "recordSet": [
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/closure_audits.csv#records",
+   "name": "closure_audits",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "audit",
+     "description": "Closure: mass, capacity, winding length",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cell",
+     "description": "NMC or LFP",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "model",
+     "description": "Value computed from the parameter set",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "measured",
+     "description": "Independently measured value",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "residual_pct",
+     "description": "(model - measured)/measured",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/metadata_primary.csv#records",
+   "name": "metadata_primary",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "(13 columns)",
+     "description": "Minimal mandatory record per cell, Battery Data Genome tier 1 (Ward et al. 2022): identifier, manufacturer, model, format, electrodes, nominal capacity and voltage, mass, generator, source, objective, tests",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/metadata_secondary.csv#records",
+   "name": "metadata_secondary",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "cell_id",
+     "description": "Cell identifier",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "quantity",
+     "description": "Cell or electrode design quantity",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "value",
+     "description": "Value",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "unit",
+     "description": "Unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "provenance",
+     "description": "M/L/D/E",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/metadata_tertiary.csv#records",
+   "name": "metadata_tertiary",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "cell_id",
+     "description": "Cell identifier",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "domain",
+     "description": "Model domain",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "parameter",
+     "description": "Parameter name",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "symbol",
+     "description": "LaTeX symbol",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "value",
+     "description": "Value",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "unit",
+     "description": "Unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "provenance",
+     "description": "M/L/D/E",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "note",
+     "description": "Source or derivation",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/parameters_both_cells.csv#records",
+   "name": "parameters_both_cells",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "group",
+     "description": "Layer or model group (Cu, anode, separator, cathode, Al, electrolyte, cell, thermal)",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "parameter",
+     "description": "Parameter name in the model",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "symbol",
+     "description": "LaTeX symbol",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "unit",
+     "description": "Unit of both value columns",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "nmc_value",
+     "description": "Value for the Tesla NMC811/graphite 4680 cell",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "nmc_tag",
+     "description": "Provenance: M measured, L literature, D derived, E estimated",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "nmc_source",
+     "description": "Source or derivation",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "lfp_value",
+     "description": "Value for the BYD FC4680 LiFePO4/graphite cell",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "lfp_tag",
+     "description": "Provenance tag",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "lfp_source",
+     "description": "Source or derivation",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "open_issue",
+     "description": "Known open question about the value",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/parameters_lfp.csv#records",
+   "name": "parameters_lfp",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "quantity",
+     "description": "Geometric or design quantity",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "value",
+     "description": "Value",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "unit",
+     "description": "Unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "provenance",
+     "description": "M/L/D/E",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/parameters_nmc.csv#records",
+   "name": "parameters_nmc",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "section",
+     "description": "Table section",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "symbol",
+     "description": "LaTeX symbol",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "value",
+     "description": "Value",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "unit",
+     "description": "Unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "provenance",
+     "description": "M/L/D/E",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "note",
+     "description": "Source or derivation",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/parameters/quality_audits.csv#records",
+   "name": "quality_audits",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "audit",
+     "description": "Closure check",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cell_id",
+     "description": "Cell identifier",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "model",
+     "description": "Model value with unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "reference",
+     "description": "Reference value with unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "residual_pct",
+     "description": "Residual",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "reference_source",
+     "description": "Source of the reference",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/published_nmc_ank2023_digitised/eis_fig12b_points.csv#records",
+   "name": "eis_fig12b_points",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "cell",
+     "description": "Cell identifier of Ank et al.",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "SOC_pct",
+     "description": "State of charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ReZ_mOhm",
+     "description": "Real part of the impedance",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "negImZ_mOhm",
+     "description": "Negative imaginary part of the impedance",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/published_nmc_ank2023_digitised/eis_fig12b_summary.csv#records",
+   "name": "eis_fig12b_summary",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "cell",
+     "description": "Cell identifier",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "SOC_pct",
+     "description": "State of charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "R_hf_mOhm",
+     "description": "High-frequency intercept",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "R_arc_end_mOhm",
+     "description": "Real part at the end of the charge-transfer arc",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "R_ct_mOhm",
+     "description": "Arc width (R_arc_end - R_hf)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Re_10mHz_mOhm",
+     "description": "Real part at 10 mHz",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "negIm_10mHz_mOhm",
+     "description": "Negative imaginary part at 10 mHz",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/published_nmc_ank2023_digitised/hppc_r10s_fig14.csv#records",
+   "name": "hppc_r10s_fig14",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "SOC_pct",
+     "description": "State of charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "R10s_<rate>_<direction>_mOhm",
+     "description": "10 s pulse resistance at 0.5C, 1.0C or 1.5C, discharge or charge (six columns)",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/published_nmc_ank2023_digitised/pocv_c20_fig13a.csv#records",
+   "name": "pocv_c20_fig13a",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "Q_Ah",
+     "description": "Charge from the discharged state",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "V",
+     "description": "C/20 pseudo open-circuit voltage",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/published_nmc_ank2023_digitised/thermal_fig16_charge.csv#records",
+   "name": "thermal_fig16_charge",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "t_s",
+     "description": "Time from the start of the CC charge, resampled to 10 s",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T_cap_1C_C",
+     "description": "Can temperature at the cap, 1C charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T_center_1C_C",
+     "description": "Can temperature at the centre, 1C charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T_bottom_1C_C",
+     "description": "Can temperature at the bottom, 1C charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T_cap_2C_C",
+     "description": "Cap, 2C charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T_center_2C_C",
+     "description": "Centre, 2C charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T_bottom_2C_C",
+     "description": "Bottom, 2C charge",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/calibrated_parameters.csv#records",
+   "name": "calibrated_parameters",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "cell",
+     "description": "NMC or LFP",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "parameter",
+     "description": "Calibrated quantity",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "symbol",
+     "description": "Symbol used in METHODS.md",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "transferred_value",
+     "description": "Value before calibration (blank if not part of the transferred set)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "calibrated_value",
+     "description": "Value of the calibrated set",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "unit",
+     "description": "Unit",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "note",
+     "description": "Meaning",
+     "dataType": "sc:Text"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/lfp_opt3_log.csv#records",
+   "name": "lfp_opt3_log",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "k",
+     "description": "Evaluation number",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10dsf",
+     "description": "log10 of the factor on the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Ea_kJ",
+     "description": "Activation energy of the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "theta0",
+     "description": "Anode stoichiometry at full charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Rc_mOhm",
+     "description": "Contact resistance heated in the can node",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10adsf",
+     "description": "log10 factor on the anode diffusivity (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10kreg",
+     "description": "log10 of the exchange-current floor (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpw",
+     "description": "Width of the end-of-lithiation drop (opt7-9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpn",
+     "description": "Exponent of the drop (opt9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cost",
+     "description": "Cost J of METHODS.md",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T1, T2",
+     "description": "RMS can-temperature difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "V1, V2",
+     "description": "RMS voltage difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ1, dQ2 / dQ28_1, dQ28_2",
+     "description": "Charge difference at 2.8 V, 1C and 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ20_1, dQ20_2",
+     "description": "Charge difference at 2.0 V",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dPk1, dPk2",
+     "description": "Peak can-temperature difference",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/lfp_opt7_log.csv#records",
+   "name": "lfp_opt7_log",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "k",
+     "description": "Evaluation number",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10dsf",
+     "description": "log10 of the factor on the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Ea_kJ",
+     "description": "Activation energy of the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "theta0",
+     "description": "Anode stoichiometry at full charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Rc_mOhm",
+     "description": "Contact resistance heated in the can node",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10adsf",
+     "description": "log10 factor on the anode diffusivity (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10kreg",
+     "description": "log10 of the exchange-current floor (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpw",
+     "description": "Width of the end-of-lithiation drop (opt7-9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpn",
+     "description": "Exponent of the drop (opt9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cost",
+     "description": "Cost J of METHODS.md",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T1, T2",
+     "description": "RMS can-temperature difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "V1, V2",
+     "description": "RMS voltage difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ1, dQ2 / dQ28_1, dQ28_2",
+     "description": "Charge difference at 2.8 V, 1C and 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ20_1, dQ20_2",
+     "description": "Charge difference at 2.0 V",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dPk1, dPk2",
+     "description": "Peak can-temperature difference",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/lfp_opt8_log.csv#records",
+   "name": "lfp_opt8_log",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "k",
+     "description": "Evaluation number",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10dsf",
+     "description": "log10 of the factor on the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Ea_kJ",
+     "description": "Activation energy of the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "theta0",
+     "description": "Anode stoichiometry at full charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Rc_mOhm",
+     "description": "Contact resistance heated in the can node",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10adsf",
+     "description": "log10 factor on the anode diffusivity (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10kreg",
+     "description": "log10 of the exchange-current floor (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpw",
+     "description": "Width of the end-of-lithiation drop (opt7-9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpn",
+     "description": "Exponent of the drop (opt9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cost",
+     "description": "Cost J of METHODS.md",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T1, T2",
+     "description": "RMS can-temperature difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "V1, V2",
+     "description": "RMS voltage difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ1, dQ2 / dQ28_1, dQ28_2",
+     "description": "Charge difference at 2.8 V, 1C and 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ20_1, dQ20_2",
+     "description": "Charge difference at 2.0 V",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dPk1, dPk2",
+     "description": "Peak can-temperature difference",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/lfp_opt9_log.csv#records",
+   "name": "lfp_opt9_log",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "k",
+     "description": "Evaluation number",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10dsf",
+     "description": "log10 of the factor on the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Ea_kJ",
+     "description": "Activation energy of the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "theta0",
+     "description": "Anode stoichiometry at full charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Rc_mOhm",
+     "description": "Contact resistance heated in the can node",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10adsf",
+     "description": "log10 factor on the anode diffusivity (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10kreg",
+     "description": "log10 of the exchange-current floor (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpw",
+     "description": "Width of the end-of-lithiation drop (opt7-9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpn",
+     "description": "Exponent of the drop (opt9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cost",
+     "description": "Cost J of METHODS.md",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T1, T2",
+     "description": "RMS can-temperature difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "V1, V2",
+     "description": "RMS voltage difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ1, dQ2 / dQ28_1, dQ28_2",
+     "description": "Charge difference at 2.8 V, 1C and 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ20_1, dQ20_2",
+     "description": "Charge difference at 2.0 V",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dPk1, dPk2",
+     "description": "Peak can-temperature difference",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/lfp_opt_log.csv#records",
+   "name": "lfp_opt_log",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "k",
+     "description": "Evaluation number",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10dsf",
+     "description": "log10 of the factor on the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Ea_kJ",
+     "description": "Activation energy of the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "theta0",
+     "description": "Anode stoichiometry at full charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Rc_mOhm",
+     "description": "Contact resistance heated in the can node",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10adsf",
+     "description": "log10 factor on the anode diffusivity (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "log10kreg",
+     "description": "log10 of the exchange-current floor (opt3 only)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpw",
+     "description": "Width of the end-of-lithiation drop (opt7-9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ocpn",
+     "description": "Exponent of the drop (opt9)",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cost",
+     "description": "Cost J of METHODS.md",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T1, T2",
+     "description": "RMS can-temperature difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "V1, V2",
+     "description": "RMS voltage difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ1, dQ2 / dQ28_1, dQ28_2",
+     "description": "Charge difference at 2.8 V, 1C and 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ20_1, dQ20_2",
+     "description": "Charge difference at 2.0 V",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dPk1, dPk2",
+     "description": "Peak can-temperature difference",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/model_runs.csv#records",
+   "name": "model_runs",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "cell",
+     "description": "NMC or LFP",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "run",
+     "description": "transferred (before calibration) or calibrated",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "rate_C",
+     "description": "Rate of the run (1 or 2)",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "variable",
+     "description": "T_can_C, T_roll_C, voltage_V, voltage_rest_V (after cut-off), heat_W",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "time_s",
+     "description": "Time from the start of the CC step",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "value",
+     "description": "Model output",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/calibration/nmc_opt1_log.csv#records",
+   "name": "nmc_opt1_log",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "k",
+     "description": "Evaluation number",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "cost",
+     "description": "Cost J",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "tauc",
+     "description": "Cathode diffusion time",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "rc_mohm",
+     "description": "Contact resistance heated in the can node",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Ea",
+     "description": "Activation energy of the cathode diffusivity",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "ath0",
+     "description": "Anode stoichiometry at full charge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "Trms1, Trms2",
+     "description": "RMS mean-can-temperature difference at 1C, 2C",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dpk1, dpk2",
+     "description": "Peak temperature difference",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "dQ1, dQ2",
+     "description": "Charge difference at 4.2 V",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "sec",
+     "description": "Wall time of the evaluation",
+     "dataType": "sc:Float"
+    }
+   ]
+  },
+  {
+   "@type": "cr:RecordSet",
+   "@id": "data/bench/fc4680_c1_1C_2C.csv#records",
+   "name": "fc4680_c1_1C_2C",
+   "field": [
+    {
+     "@type": "cr:Field",
+     "name": "step_index",
+     "description": "Step number of the test protocol (1-8, see METHODS.md)",
+     "dataType": "sc:Integer"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "step_type",
+     "description": "CCCV Chg = constant current then constant voltage charge; CC DChg = constant-current discharge; Rest = zero current",
+     "dataType": "sc:Text"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "test_time_s",
+     "description": "Time since the start of the test, reconstructed from the step durations",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "time_in_step_s",
+     "description": "Time since the start of the step",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "current_A",
+     "description": "Cell current; positive = charge, negative = discharge",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "voltage_V",
+     "description": "Terminal voltage at the sense contacts",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "step_capacity_Ah",
+     "description": "Charge passed since the start of the step",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "step_energy_Wh",
+     "description": "Energy passed since the start of the step",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T1_C",
+     "description": "Can temperature, type-T thermocouple 1 mm from the positive end",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T2_C",
+     "description": "Can temperature, type-T thermocouple at mid-height",
+     "dataType": "sc:Float"
+    },
+    {
+     "@type": "cr:Field",
+     "name": "T3_C",
+     "description": "Can temperature, type-T thermocouple 1 mm from the negative end",
+     "dataType": "sc:Float"
+    }
+   ]
+  }
+ ]
+}

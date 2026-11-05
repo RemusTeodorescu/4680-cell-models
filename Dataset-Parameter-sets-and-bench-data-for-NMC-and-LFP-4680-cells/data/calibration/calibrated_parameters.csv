@@ -1,0 +1,17 @@
+cell,parameter,symbol,transferred_value,calibrated_value,unit,note
+LFP,cathode diffusivity factor,f_Ds,1.0,0.7674,-,factor on the transferred LFP solid diffusivity; calibrated diffusion time 4740 s
+LFP,activation energy of cathode diffusivity,Ea_Ds,80.0,18.78,kJ/mol,
+LFP,anode stoichiometry at full charge,theta_n0,0.82258,0.7962,-,
+LFP,contact resistance heated in the can node,R_c,0.0,1.342,mOhm,I^2 R_c heat outside the voltage sense points
+LFP,width of end-of-lithiation drop,w,,0.1307,-,term -A[(theta-1+w)/w]^n added for theta > 1-w
+LFP,exponent of end-of-lithiation drop,n,,2.578,-,
+LFP,amplitude of end-of-lithiation drop,A,,1.4,V,fixed by the transferred fit at theta = 1
+LFP,exchange-current floor,k_floor,0.0,0.0002,"x c_s,max",numerical; no effect above the knee
+LFP,fixture conductance,hA,,0.3367,W/K,identified from the energy balance of the full cycle
+LFP,whole-cell heat capacity,C_cell,,277.0,J/K,identified from the cooling after cut-off
+LFP,effective ambient,T_amb,,23.2,degC,cell temperature at rest in the chamber
+NMC,cathode diffusion time,tau_c,700,8031.1,s,r_s^2/D_s; transferred working value 700 s (Chen et al. 2020 group: 6812 s)
+NMC,activation energy of cathode diffusivity,Ea_Ds,25.0,11.0,kJ/mol,
+NMC,anode stoichiometry at full charge,theta_n0,0.70063,0.70031,-,
+NMC,contact resistance heated in the can node,R_c,0,0.9411,mOhm,I^2 R_c heat outside the voltage path
+NMC,fixture conductance,hA,,0.1815,W/K,"from the measured cooling, tau = 1735 s"

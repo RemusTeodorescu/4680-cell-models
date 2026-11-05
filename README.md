@@ -7,11 +7,12 @@ instructions.
 | Paper | Status | Folder |
 |---|---|---|
 | Parameterisation of NMC and LFP 4680 cells for electrochemical and thermal modelling | submitted; preprint on arXiv | [`Parameterisation-of-NMC-and-LFP-4680-cells/`](Parameterisation-of-NMC-and-LFP-4680-cells/) |
+| Parameter sets and bench data for NMC and LFP 4680 cylindrical lithium-ion cells (dataset for a FAIR² Data Article) | in preparation | [`Dataset-Parameter-sets-and-bench-data-for-NMC-and-LFP-4680-cells/`](Dataset-Parameter-sets-and-bench-data-for-NMC-and-LFP-4680-cells/) |
 | Multi-timescale thermal Doyle–Fuller–Newman model of LiFePO₄ 4680 cells for dynamic loads from milliseconds to hours | in preparation | [`Multi-timescale-thermal-DFN-of-LFP-4680-cells/`](Multi-timescale-thermal-DFN-of-LFP-4680-cells/) |
 
 ## Licence
 
-Code: MIT. Data and parameter sets: CC BY 4.0, with the exceptions stated in each folder (see `LICENSE`).
+Code: MIT. Data and parameter sets: CC BY 4.0, with the exceptions stated in each folder (see `LICENSE`); the dataset folder is ODC-BY 1.0 (its `LICENSE.md`).
 
 ## Citation
 
